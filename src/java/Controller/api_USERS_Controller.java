@@ -4,6 +4,7 @@
  */
 package Controller;
 
+import Utils.jwt;
 import Service.USERS_Service;
 import Model.USERS;
 import com.google.gson.Gson;
@@ -61,48 +62,58 @@ public class api_USERS_Controller extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //check if get user by id, the request will have a query id
-        if(request.getParameter("id") != null){
-            //get user by id
-            int id = Integer.parseInt(request.getParameter("id"));
-            //call service to get user by id
-            //USERS_Service userService = new USERS_Service();
-            //USERS user = userService.getUserById(id);
-            //return user in json format
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            //out.println(new Gson().toJson(user));
 
-            USERS_Service userService = new USERS_Service();
-            USERS user = userService.getUserById(id); 
-            if(user != null){
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new Gson().toJson(user));
-            }else{
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("{\"error\": \"User not found\"}");
+        if (jwt.validateToken(request)) {
+            System.out.println("Token is valid!");
+            
+            // check roleID
+            int roleID = (int) request.getAttribute("roleID");
+            if (roleID == 3) { // 1 student, 2 teacher, 3 admin
+
+                // Check if get user by id, the request will have a query id
+                String idParam = request.getParameter("id");
+                USERS_Service userService = new USERS_Service();
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                if (idParam != null) {
+                    // Get user by id
+                    try {
+                        int id = Integer.parseInt(idParam);
+                        USERS user = userService.getUserById(id);
+                        if (user != null) {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write(new Gson().toJson(user));
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                            response.getWriter().write("{\"error\": \"User not found\"}");
+                        }
+                    } catch (NumberFormatException e) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\": \"Invalid user id\"}");
+                    }
+                } else {
+                    // Get all users
+                    System.out.println("Get all users");
+                    List<USERS> userList = userService.getAllUsers();
+                    System.out.println(userList);
+                    if (userList != null) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.getWriter().write(new Gson().toJson(userList));
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.getWriter().write("{\"error\": \"No users found\"}");
+                    }
+                }
+
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"message\": \"You do not have permission to access this resource\"}");
             }
-        }else{
-            //get all users
-            //USERS_Service userService = new USERS_Service();
-            //List<USERS> userList = userService.getAllUsers();
-            //return user list in json format
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            //out.println(new Gson().toJson(userList));
-            System.out.println("Get all user");
-            USERS_Service userService = new USERS_Service();
-            List<USERS> userList = userService.getAllUsers();
-            System.out.println(userList);
-            if(userList != null){
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new Gson().toJson(userList));
-            }else{
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("{\"error\": \"No users found\"}");
-            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"Invalid token\"}");
         }
-        
     }
 
     /**

@@ -29,7 +29,7 @@ public class USERS_Service {
             while (result.next()) {
                 USERS user = new USERS();
                 user.setID(result.getInt("id"));
-                user.setUserName(result.getString(""));
+                user.setUserName(result.getString("userName"));
                 user.setPassword(result.getString("password"));
                 user.setEmail(result.getString("email"));
                 user.setRoleID(result.getInt("roleID"));
@@ -49,10 +49,32 @@ public class USERS_Service {
     }
 
     public USERS getUserById(int id) {
-        // Implement the logic to retrieve a user by ID from the database
-        // For example, you can use JDBC or an ORM framework like Hibernate
-        // to fetch the data and return a USERS object.
-        return null;
+        USERS user = new USERS();
+
+        try{
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM USERS WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            ResultSet result = pstmt.executeQuery();
+
+            if (result.next()) {
+                user.setID(result.getInt("id"));
+                user.setUserName(result.getString("userName"));
+                user.setPassword(result.getString("password"));
+                user.setEmail(result.getString("email"));
+                user.setRoleID(result.getInt("roleID"));
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+        
+            return user;
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return null;
+        }     
     }
 
     public void createUser(USERS user) {
