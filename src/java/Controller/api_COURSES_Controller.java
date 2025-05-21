@@ -1,7 +1,7 @@
 package Controller;
 
-import Service.USERS_Service;
-import Model.USERS;
+import Service.COURSES_Service;
+import Model.COURSES;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import jakarta.servlet.ServletException;
@@ -13,9 +13,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "api_USERS_Controller", urlPatterns = {"/api/users/*"})
-
-public class api_USERS_Controller extends HttpServlet {
+@WebServlet(name = "api_COURSES_Controller", urlPatterns = {"/api/courses/*"})
+public class api_COURSES_Controller extends HttpServlet {
 
     private final Gson gson = new Gson();
 
@@ -28,16 +27,11 @@ public class api_USERS_Controller extends HttpServlet {
         try {
             String pathInfo = request.getPathInfo();
 
-            if (pathInfo.equals("/get_all_users") ) {
-                // GET all users
-                getAllUsers(response);
-            } 
-            else if (pathInfo.startsWith("/get_user_byID/")) {
-                // GET user by ID
-                getUserById(pathInfo, response);
-            } 
-            
-            else {
+            if (pathInfo.equals("/get_all_courses")) {
+                getAllCourses(response);
+            } else if (pathInfo.startsWith("/get_course_byID/")) {
+                getCourseById(pathInfo, response);
+            } else {
                 response.setStatus(404);
                 response.getWriter().write("{\"error\":\"API endpoint not found\"}");
             }
@@ -47,40 +41,38 @@ public class api_USERS_Controller extends HttpServlet {
         }
     }
 
-    private void getAllUsers(HttpServletResponse response) throws IOException {
-        USERS_Service userService = new USERS_Service();
-        List<USERS> userList = userService.getAllUsers();
+    private void getAllCourses(HttpServletResponse response) throws IOException {
+        COURSES_Service courseService = new COURSES_Service();
+        List<COURSES> courseList = courseService.getAllCourses();
 
-        if (userList != null && !userList.isEmpty()) {
+        if (courseList != null && !courseList.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write(gson.toJson(userList));
+            response.getWriter().write(gson.toJson(courseList));
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write("{\"error\": \"No users found\"}");
+            response.getWriter().write("{\"error\": \"No courses found\"}");
         }
-
     }
 
-    private void getUserById(String pathInfo, HttpServletResponse response) throws IOException {
+    private void getCourseById(String pathInfo, HttpServletResponse response) throws IOException {
         try {
             String[] parts = pathInfo.split("/");
             int id = Integer.parseInt(parts[2]);
 
-            USERS_Service userService = new USERS_Service();
-            USERS user = userService.getUserById(id);
+            COURSES_Service courseService = new COURSES_Service();
+            COURSES course = courseService.getCourseById(id);
 
-            if (user != null) {
+            if (course != null) {
                 response.setStatus(HttpServletResponse.SC_OK);
-     
-                response.getWriter().write(gson.toJson(user));
+                response.getWriter().write(gson.toJson(course));
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("{\"error\": \"User not found\"}");
+                response.getWriter().write("{\"error\": \"Course not found\"}");
             }
 
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             response.setStatus(400);
-            response.getWriter().write("{\"error\": \"Invalid user ID format\"}");
+            response.getWriter().write("{\"error\": \"Invalid course ID format\"}");
         }
     }
 
@@ -89,7 +81,7 @@ public class api_USERS_Controller extends HttpServlet {
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
 
-        if (pathInfo != null && pathInfo.equals("/create_user")) {
+        if (pathInfo != null && pathInfo.equals("/create_course")) {
             try (BufferedReader reader = request.getReader()) {
                 StringBuilder sb = new StringBuilder();
                 String line;
@@ -104,32 +96,32 @@ public class api_USERS_Controller extends HttpServlet {
                     return;
                 }
 
-                USERS user;
+                COURSES course;
                 try {
-                    user = gson.fromJson(json, USERS.class);
+                    course = gson.fromJson(json, COURSES.class);
                 } catch (JsonSyntaxException e) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     response.getWriter().write("{\"error\": \"Invalid JSON format: " + e.getMessage() + "\"}");
                     return;
                 }
 
-                if (user == null || user.getUserName() == null || user.getPassword() == null) {
+                if (course == null || course.getTitle() == null) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("{\"error\": \"Missing required fields (username or password)\"}");
+                    response.getWriter().write("{\"error\": \"Missing required field (title)\"}");
                     return;
                 }
 
-                USERS_Service userService = new USERS_Service();
-                userService.createUser(user);
+                COURSES_Service courseService = new COURSES_Service();
+                courseService.createCourse(course);
 
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write("{\"message\": \"User created successfully\"}");
+                response.getWriter().write("{\"message\": \"Course created successfully\"}");
 
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("{\"error\": \"Error creating user: " + e.getMessage() + "\"}");
+                response.getWriter().write("{\"error\": \"Error creating course: " + e.getMessage() + "\"}");
             }
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -138,93 +130,81 @@ public class api_USERS_Controller extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        try{
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
             String pathInfo = request.getPathInfo();
-             if (pathInfo.startsWith("/delete_user/") ) {
-                // GET all users
-                deleteUser(pathInfo,response);
-            } 
-             else {
+            if (pathInfo.startsWith("/delete_course/")) {
+                deleteCourse(pathInfo, response);
+            } else {
                 response.setStatus(404);
                 response.getWriter().write("{\"error\":\"API endpoint not found\"}");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             handleError(response, e);
         }
-        
     }
-    
-    private void deleteUser(String pathInfo, HttpServletResponse response) throws ServletException, IOException{
-       try {
+
+    private void deleteCourse(String pathInfo, HttpServletResponse response) throws ServletException, IOException {
+        try {
             String[] parts = pathInfo.split("/");
             int id = Integer.parseInt(parts[2]);
 
-            USERS_Service userService = new USERS_Service();
-            userService.deleteUser(id);
+            COURSES_Service courseService = new COURSES_Service();
+            courseService.deleteCourse(id);
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write("{\"message\": \"User deleted successfully\"}");
+            response.getWriter().write("{\"message\": \"Course deleted successfully\"}");
 
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             response.setStatus(400);
-            response.getWriter().write("{\"error\": \"Invalid user ID format\"}");
+            response.getWriter().write("{\"error\": \"Invalid course ID format\"}");
         }
     }
-    
-    
+
     @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        try{
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
             String pathInfo = request.getPathInfo();
-             if (pathInfo.startsWith("/update_user/") ) {
-                // GET all users
-                 updateUser(pathInfo, response, request);
-            } 
-             else {
+            if (pathInfo.startsWith("/update_course/")) {
+                updateCourse(pathInfo, response, request);
+            } else {
                 response.setStatus(404);
                 response.getWriter().write("{\"error\":\"API endpoint not found\"}");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             handleError(response, e);
         }
-        
-    } 
-    private void updateUser(String pathInfo, HttpServletResponse response, HttpServletRequest request) throws IOException {
-    try {
-        String[] parts = pathInfo.split("/");
-        int id = Integer.parseInt(parts[2]);
-
-        // Đọc body JSON
-        BufferedReader reader = request.getReader();
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-
-        // Parse JSON thành object USERS
-        Gson gson = new Gson();
-        USERS user = gson.fromJson(sb.toString(), USERS.class);
-        user.setID(id); // Gán ID từ path vào object
-
-        USERS_Service userService = new USERS_Service();
-        userService.updateUser(user);
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("{\"message\": \"User updated successfully\"}");
-
-    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-        response.setStatus(400);
-        response.getWriter().write("{\"error\": \"Invalid user ID format\"}");
-    } catch (Exception e) {
-        response.setStatus(500);
-        response.getWriter().write("{\"error\": \"Server error: " + e.getMessage() + "\"}");
     }
-}
- 
+
+    private void updateCourse(String pathInfo, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        try {
+            String[] parts = pathInfo.split("/");
+            int id = Integer.parseInt(parts[2]);
+
+            BufferedReader reader = request.getReader();
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+
+            COURSES course = gson.fromJson(sb.toString(), COURSES.class);
+            course.setID(id); // Gán ID từ path
+
+            COURSES_Service courseService = new COURSES_Service();
+            courseService.updateCourse(course);
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write("{\"message\": \"Course updated successfully\"}");
+
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            response.setStatus(400);
+            response.getWriter().write("{\"error\": \"Invalid course ID format\"}");
+        } catch (Exception e) {
+            response.setStatus(500);
+            response.getWriter().write("{\"error\": \"Server error: " + e.getMessage() + "\"}");
+        }
+    }
 
     private void setCorsHeaders(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
@@ -237,5 +217,4 @@ public class api_USERS_Controller extends HttpServlet {
         response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         e.printStackTrace();
     }
- 
 }

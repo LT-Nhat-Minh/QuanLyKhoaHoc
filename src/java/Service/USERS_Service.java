@@ -29,7 +29,7 @@ public class USERS_Service {
             while (result.next()) {
                 USERS user = new USERS();
                 user.setID(result.getInt("id"));
-                user.setUserName(result.getString(""));
+                user.setUserName(result.getString("username"));
                 user.setPassword(result.getString("password"));
                 user.setEmail(result.getString("email"));
                 user.setRoleID(result.getInt("roleID"));
@@ -49,27 +49,90 @@ public class USERS_Service {
     }
 
     public USERS getUserById(int id) {
-        // Implement the logic to retrieve a user by ID from the database
-        // For example, you can use JDBC or an ORM framework like Hibernate
-        // to fetch the data and return a USERS object.
-        return null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM USERS WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            ResultSet result = pstmt.executeQuery();
+
+            if (result.next()) {
+                USERS user = new USERS();
+                user.setID(result.getInt("id"));
+                user.setUserName(result.getString("username"));
+                user.setPassword(result.getString("password"));
+                user.setEmail(result.getString("email"));
+                user.setRoleID(result.getInt("roleID"));
+                return user;
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+                    return null;
+
     }
 
     public void createUser(USERS user) {
-        // Implement the logic to create a new user in the database
-        // For example, you can use JDBC or an ORM framework like Hibernate
-        // to insert the data into the database.
+        try{
+            Connection conn = DBConnection.getConnection();
+            String sql = "INSERT INTO USERS (username, password, email, roleID) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getUserName());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setInt(4, user.getRoleID());
+            pstmt.executeUpdate();
+            
+            
+
+            pstmt.close();
+            conn.close();
+            
+            
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     public void updateUser(USERS user) {
-        // Implement the logic to update an existing user in the database
-        // For example, you can use JDBC or an ORM framework like Hibernate
-        // to update the data in the database.
+         try{
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE USERS SET username = ?, password = ?, email = ?, roleID = ? WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getUserName());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setInt(4, user.getRoleID());
+            pstmt.setInt(5, user.getID());
+            pstmt.executeUpdate();
+
+            pstmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     public void deleteUser(int id) {
-        // Implement the logic to delete a user by ID from the database
-        // For example, you can use JDBC or an ORM framework like Hibernate
-        // to delete the data from the database.
+        try{
+            Connection conn = DBConnection.getConnection();
+            String sql = "DELETE FROM USERS WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+
+            pstmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }

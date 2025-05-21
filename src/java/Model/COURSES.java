@@ -14,6 +14,7 @@ public class COURSES {
     private String description;
     private double price;
     
+    public COURSES(){}
     public COURSES(int id, String title, String description, double price){
         this.id = id;
         this.title = title;
@@ -21,15 +22,15 @@ public class COURSES {
         this.price = price;
     }
     
-    public int getCourseID(){
+    public int getID(){
         return id;
     }
     
-    public String getCourseTitle(){
+    public String getTitle(){
         return title;
     }
     
-    public String getCourseDescription(){
+    public String getDescription(){
         return description;
     } 
     
@@ -37,15 +38,15 @@ public class COURSES {
         return price;
     }
     
-    public void setCourseID( int id){
+    public void setID( int id){
         this.id = id;
     }
     
-    public void setCourseTitle(String title){
+    public void setTitle(String title){
         this.title = title;
     }
     
-    public void setCourseDescription(String description){
+    public void setDescription(String description){
         this.description = description;
     } 
     
