@@ -70,7 +70,7 @@ public class LESSONS_Service {
     public void createLesson(LESSONS lesson) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO LESSONS (title, description, videoURL) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO LESSONS (title, content, videoURL) VALUES (?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, lesson.getTitle());
             pstmt.setString(2, lesson.getContent());
@@ -88,7 +88,7 @@ public class LESSONS_Service {
     public void updateLesson(LESSONS lesson) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE LESSONS SET title = ?, description = ?, videoURL = ? WHERE id = ?";
+            String sql = "UPDATE LESSONS SET title = ?, content = ?, videoURL = ? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, lesson.getTitle());
             pstmt.setString(2, lesson.getContent());

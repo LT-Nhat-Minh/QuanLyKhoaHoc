@@ -13,9 +13,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -117,28 +119,76 @@ public class api_USERS_Controller extends HttpServlet {
         }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
+        throws IOException {
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
+    setCorsHeaders(response);
+    response.setContentType("application/json;charset=UTF-8");
+
+    try {
+        String contentType = request.getContentType();
+        USERS user = new USERS();
+
+        if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
+            user.setUserName(request.getParameter("userName"));
+            user.setEmail(request.getParameter("email"));
+            user.setPassword(request.getParameter("password"));
+
+            String roleStr = request.getParameter("roleID");
+            try {
+                user.setRoleID(Integer.parseInt(roleStr));
+            } catch (NumberFormatException e) {
+                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid roleID format");
+                return;
+            }
+
+        } else {
+            sendError(response, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported content type");
+            return;
+        }
+
+        if (user.getUserName() == null || user.getEmail() == null || user.getPassword() == null) {
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Missing required fields");
+            return;
+        }
+
+        USERS_Service userService = new USERS_Service();
+        userService.createUser(user);
+
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        response.getWriter().write("{\"message\": \"User created successfully\"}");
+
+    } catch (Exception e) {
+        handleError(response, e); // hoặc log lỗi tại đây
+        e.printStackTrace(); // In lỗi chi tiết trong console
+    }
+}
+    
     @Override
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
+    private void handleError(HttpServletResponse response, Exception e) throws IOException {
+    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    response.setContentType("application/json;charset=UTF-8");
+    response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+}
+
+
+  private void sendError(HttpServletResponse response, int statusCode, String message) throws IOException {
+    response.setStatus(statusCode);
+    response.setContentType("application/json;charset=UTF-8");
+    response.getWriter().write("{\"error\": \"" + message + "\"}");
+}
+  
+  private void setCorsHeaders(HttpServletResponse response) {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+
 
 }

@@ -17,7 +17,7 @@ import java.util.List;
 public class api_LESSONS_Controller extends HttpServlet {
 
     private final Gson gson = new Gson();
-
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -25,63 +25,48 @@ public class api_LESSONS_Controller extends HttpServlet {
         response.setContentType("application/json;charset=UTF-8");
 
         try {
-            String pathInfo = request.getPathInfo();
+            String idParam = request.getParameter("id");
+            LESSONS_Service lessonService = new LESSONS_Service();
+            response.setCharacterEncoding("UTF-8");
 
-            if (pathInfo.equals("/get_all_lessons")) {
-                getAllLessons(response);
-            } else if (pathInfo.startsWith("/get_lesson_byID/")) {
-                getLessonById(pathInfo, response);
+            if (idParam != null) {
+                // Lấy bài học theo ID
+                try {
+                    int id = Integer.parseInt(idParam);
+                    LESSONS lesson = lessonService.getLessonById(id);
+                    if (lesson != null) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.getWriter().write(new Gson().toJson(lesson));
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.getWriter().write("{\"error\": \"Lesson not found\"}");
+                    }
+                } catch (NumberFormatException e) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"Invalid lesson id\"}");
+                }
             } else {
-                response.setStatus(404);
-                response.getWriter().write("{\"error\":\"API endpoint not found\"}");
-            }
+                // Lấy tất cả bài học
+                List<LESSONS> lessonList = lessonService.getAllLessons();
 
+                if (lessonList != null && !lessonList.isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write(new Gson().toJson(lessonList));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"error\": \"No lessons found\"}");
+                }
+            }
         } catch (Exception e) {
             handleError(response, e);
         }
     }
 
-    private void getAllLessons(HttpServletResponse response) throws IOException {
-        LESSONS_Service lessonService = new LESSONS_Service();
-        List<LESSONS> lessonList = lessonService.getAllLessons();
-
-        if (lessonList != null && !lessonList.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write(gson.toJson(lessonList));
-        } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write("{\"error\": \"No lessons found\"}");
-        }
-    }
-
-    private void getLessonById(String pathInfo, HttpServletResponse response) throws IOException {
-        try {
-            String[] parts = pathInfo.split("/");
-            int id = Integer.parseInt(parts[2]);
-
-            LESSONS_Service lessonService = new LESSONS_Service();
-            LESSONS lesson = lessonService.getLessonById(id);
-
-            if (lesson != null) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(gson.toJson(lesson));
-            } else {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("{\"error\": \"Lesson not found\"}");
-            }
-
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            response.setStatus(400);
-            response.getWriter().write("{\"error\": \"Invalid lesson ID format\"}");
-        }
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
 
-        if (pathInfo != null && pathInfo.equals("/create_lesson")) {
             try (BufferedReader reader = request.getReader()) {
                 StringBuilder sb = new StringBuilder();
                 String line;
@@ -117,70 +102,52 @@ public class api_LESSONS_Controller extends HttpServlet {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write("{\"message\": \"Lesson created successfully\"}");
+                response.getWriter().write("{\"message\": \"Course created successfully\"}");
 
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("{\"error\": \"Error creating lesson: " + e.getMessage() + "\"}");
+                response.getWriter().write("{\"error\": \"Error creating course: " + e.getMessage() + "\"}");
             }
-        } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write("{\"error\": \"API endpoint not found\"}");
         }
-    }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String pathInfo = request.getPathInfo();
-            if (pathInfo.startsWith("/delete_lesson/")) {
-                deleteLesson(pathInfo, response);
-            } else {
-                response.setStatus(404);
-                response.getWriter().write("{\"error\":\"API endpoint not found\"}");
+            String idParam = request.getParameter("id");
+            if (idParam == null || idParam.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Missing lesson ID\"}");
+                return;
             }
-        } catch (Exception e) {
-            handleError(response, e);
-        }
-    }
 
-    private void deleteLesson(String pathInfo, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            String[] parts = pathInfo.split("/");
-            int id = Integer.parseInt(parts[2]);
-
+            int lessonId = Integer.parseInt(idParam); // Có thể gây NumberFormatException
             LESSONS_Service lessonService = new LESSONS_Service();
-            lessonService.deleteLesson(id);
+            lessonService.deleteLesson(lessonId); // Giả sử phương thức cần int courseId
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write("{\"message\": \"Lesson deleted successfully\"}");
 
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            response.setStatus(400);
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"Invalid lesson ID format\"}");
-        }
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            String pathInfo = request.getPathInfo();
-            if (pathInfo.startsWith("/update_lesson/")) {
-                updateLesson(pathInfo, response, request);
-            } else {
-                response.setStatus(404);
-                response.getWriter().write("{\"error\":\"API endpoint not found\"}");
-            }
         } catch (Exception e) {
             handleError(response, e);
         }
     }
 
-    private void updateLesson(String pathInfo, HttpServletResponse response, HttpServletRequest request) throws IOException {
+    @Override
+        protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String[] parts = pathInfo.split("/");
-            int id = Integer.parseInt(parts[2]);
+            String idParam = request.getParameter("id");
+            if (idParam == null || idParam.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Missing lesson ID\"}");
+                return;
+            }
 
+            int lessonId = Integer.parseInt(idParam);
+
+            // Đọc dữ liệu JSON từ body request
             BufferedReader reader = request.getReader();
             StringBuilder sb = new StringBuilder();
             String line;
@@ -189,7 +156,7 @@ public class api_LESSONS_Controller extends HttpServlet {
             }
 
             LESSONS lesson = gson.fromJson(sb.toString(), LESSONS.class);
-            lesson.setID(id); // Gán ID từ path
+            lesson.setID(lessonId); // Gán ID từ tham số URL
 
             LESSONS_Service lessonService = new LESSONS_Service();
             lessonService.updateLesson(lesson);
@@ -197,14 +164,17 @@ public class api_LESSONS_Controller extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write("{\"message\": \"Lesson updated successfully\"}");
 
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            response.setStatus(400);
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"Invalid lesson ID format\"}");
         } catch (Exception e) {
-            response.setStatus(500);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\": \"Server error: " + e.getMessage() + "\"}");
         }
     }
+
+
+   
 
     private void setCorsHeaders(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
