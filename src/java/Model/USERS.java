@@ -13,17 +13,19 @@ public class USERS {
     private String userName;
     private String password;
     private String email;
-    private String role;
+    private int roleID;
     
-    public USERS(int id, String userName, String password,String email, String role){
+    public USERS(){}
+    
+    public USERS(int id, String userName, String password,String email, int roleID){
         this.id = id;
         this.userName = userName;
         this.password = password;
         this.email = email;
-        this.role = role;   
+        this.roleID = roleID;  
     }
     
-   public int getUserID(){
+   public int getID(){
        return id;
    }
    
@@ -39,11 +41,11 @@ public class USERS {
        return email;
    }
    
-   public String getRole(){
-       return role;
+   public int getRoleID(){
+       return roleID;
    }
    
-   public void setUserID(int id) {
+   public void setID(int id) {
         this.id = id;
     }
 
@@ -59,8 +61,8 @@ public class USERS {
         this.email = email;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoleID(int roleID) {
+        this.roleID = roleID;
     }
 
 }
