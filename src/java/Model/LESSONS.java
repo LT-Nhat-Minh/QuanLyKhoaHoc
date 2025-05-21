@@ -13,7 +13,7 @@ public class LESSONS {
     private String title;    
     private String content;
     private String videoURL;
-    
+    public LESSONS(){}
     public LESSONS(int id, String title, String content, String videoURL){
         this.id = id;
         this.title = title;
@@ -21,15 +21,15 @@ public class LESSONS {
         this.videoURL = videoURL;
     }
     
-    public int getLessonID(){
+    public int getID(){
         return id;
     }
     
-    public String getLessonTitle(){
+    public String getTitle(){
         return title;
     }
     
-    public String getLessonContent(){
+    public String getContent(){
         return content;
     } 
     
@@ -37,15 +37,15 @@ public class LESSONS {
         return videoURL;
     }
     
-    public void setLessonID( int id){
+    public void setID( int id){
         this.id = id;
     }
     
-    public void setLessonTitle(String title){
+    public void setTitle(String title){
         this.title = title;
     }
     
-    public void setLessonContent(String content){
+    public void setContent(String content){
         this.content = content;
     } 
     

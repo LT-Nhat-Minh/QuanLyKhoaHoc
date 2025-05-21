@@ -63,9 +63,10 @@ public class api_USERS_Controller extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // check validate token        
         if (jwt.validateToken(request)) {
             System.out.println("Token is valid!");
-            
+
             // check roleID
             int roleID = (int) request.getAttribute("roleID");
             if (roleID == 3) { // 1 student, 2 teacher, 3 admin
