@@ -67,17 +67,23 @@ public class LESSONS_Service {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "INSERT INTO LESSONS (title, content, videoURL) VALUES (?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, lesson.getTitle());
             pstmt.setString(2, lesson.getContent());
             pstmt.setString(3, lesson.getVideoURL());
             pstmt.executeUpdate();
 
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                lesson.setID(generatedKeys.getInt(1));
+            }
+
+            generatedKeys.close();
             pstmt.close();
             conn.close();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+            throw new RuntimeException("Error service: " + e.getMessage());
         }
     }
 

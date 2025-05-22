@@ -67,12 +67,18 @@ public class COURSES_Service {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "INSERT INTO COURSES (title, description, price) VALUES (?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, course.getTitle());
             pstmt.setString(2, course.getDescription());
             pstmt.setDouble(3, course.getPrice());
             pstmt.executeUpdate();
 
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                course.setID(generatedKeys.getInt(1));
+            }
+
+            generatedKeys.close();
             pstmt.close();
             conn.close();
 
@@ -91,10 +97,10 @@ public class COURSES_Service {
             pstmt.setDouble(3, course.getPrice());
             pstmt.setInt(4, course.getID());
             pstmt.executeUpdate();
-
+            
             pstmt.close();
             conn.close();
-
+            
         } catch (Exception e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }

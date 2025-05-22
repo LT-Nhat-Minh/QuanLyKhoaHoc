@@ -2,16 +2,16 @@ package Controller;
 
 import Service.COURSES_Service;
 import Model.COURSES;
+import Utils.parseForm;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "api_COURSES_Controller", urlPatterns = {"/api/courses"})
 public class api_COURSES_Controller extends HttpServlet {
@@ -32,7 +32,6 @@ public class api_COURSES_Controller extends HttpServlet {
                 response.getWriter().write(new Gson().toJson(course));
             } else {
                 // Get all courses
-                System.out.println("get all courses");
                 COURSES_Service courseService = new COURSES_Service();
                 List<COURSES> courseList = courseService.getAllCourses();
 
@@ -74,35 +73,40 @@ public class api_COURSES_Controller extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        try {
-            if (request.getParameter("id") != null) {
-                // Get all parameters
-                int id = Integer.parseInt(request.getParameter("id"));
-                String title = request.getParameter("title");
-                String description = request.getParameter("description");
-                double price = Double.parseDouble(request.getParameter("price"));
+        throws ServletException, IOException {
+    response.setContentType("application/json;charset=UTF-8");
 
-                // Validate input
-                if (title == null || description == null || price <= 0) {
-                    throw new Exception("Missing required fields");
-                }
+    try {
+        // Manually parse form data from body (x-www-form-urlencoded)
+        Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+    
 
-                COURSES course = new COURSES(id, title, description, price);
-                COURSES_Service courseService = new COURSES_Service();
-                courseService.updateCourse(course);
+        int id = Integer.parseInt(params.get("id"));
+        String title = params.get("title");
+        String description = params.get("description");
+        double price = Double.parseDouble(params.get("price"));
 
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new Gson().toJson(course));
-            } else {
-                throw new Exception("Course ID is required");
-            }
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\": \"Error updating course: " + e.getMessage() + "\"}");
+        // Validate data
+        if (title == null || description == null || price <= 0) {
+            throw new Exception("Missing required fields");
         }
+
+        // Update course
+        if (id > 0) {
+            COURSES course = new COURSES(id, title, description, price);
+            COURSES_Service courseService = new COURSES_Service();
+            courseService.updateCourse(course);
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(new Gson().toJson(course));
+        } else {
+            throw new Exception("Course ID is required");
+        }
+    } catch (Exception e) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().write("{\"error\": \"Error updating course: " + e.getMessage() + "\"}");
     }
+}
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)

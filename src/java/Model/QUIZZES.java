@@ -12,14 +12,18 @@ public class QUIZZES {
     protected int id;
     private String title;    
     private String question;
+
+    public QUIZZES(){}
+
+    public QUIZZES(String title, String question){
+        this.title = title;
+        this.question = question;
+    }
     
     public QUIZZES(int id, String title, String question){
         this.id = id;
         this.title = title;
         this.question = question;
-    }
-
-    public QUIZZES() {
     }
     
     public int getID(){

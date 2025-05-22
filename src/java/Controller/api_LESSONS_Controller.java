@@ -2,6 +2,7 @@ package Controller;
 
 import Service.LESSONS_Service;
 import Model.LESSONS;
+import Utils.parseForm;
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "api_LESSONS_Controller", urlPatterns = {"/api/lessons"})
 public class api_LESSONS_Controller extends HttpServlet {
@@ -70,10 +72,13 @@ public class api_LESSONS_Controller extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            String title = request.getParameter("title");
-            String content = request.getParameter("content");
-            String videoURL = request.getParameter("videoURL");
+            // Manually parse form data from body (x-www-form-urlencoded)
+            Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+
+            int id = Integer.parseInt(params.get("id"));
+            String title = params.get("title");
+            String content = params.get("content");
+            String videoURL = params.get("videoURL");
 
             // Validate input
             if (title == null || content == null || videoURL == null) {
@@ -101,10 +106,11 @@ public class api_LESSONS_Controller extends HttpServlet {
                 // Delete lesson by ID
                 int id = Integer.parseInt(request.getParameter("id"));
                 LESSONS_Service lessonService = new LESSONS_Service();
+                LESSONS lesson = lessonService.getLessonById(id);
                 lessonService.deleteLesson(id);
 
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("{\"message\": \"Lesson deleted successfully\"}");
+                response.getWriter().write("{\"message\": \"Lesson deleted successfully\", \"lesson\": " + new Gson().toJson(lesson) + "}");
             } else {
                 throw new Exception("Missing lesson ID");
             }

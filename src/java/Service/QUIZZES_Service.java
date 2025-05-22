@@ -32,7 +32,7 @@ public class QUIZZES_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
 
         return quizList;
@@ -59,7 +59,7 @@ public class QUIZZES_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
 
         return null;
@@ -69,16 +69,21 @@ public class QUIZZES_Service {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "INSERT INTO QUIZZES (title, question) VALUES (?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, quiz.getTitle());
             pstmt.setString(2, quiz.getQuestion());
             pstmt.executeUpdate();
+
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                quiz.setID(generatedKeys.getInt(1));
+            }
 
             pstmt.close();
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
@@ -88,15 +93,15 @@ public class QUIZZES_Service {
             String sql = "UPDATE QUIZZES SET title = ?, question = ? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, quiz.getTitle());
-             pstmt.setString(2, quiz.getQuestion());
-            pstmt.setInt(4, quiz.getID());
+            pstmt.setString(2, quiz.getQuestion());
+            pstmt.setInt(3, quiz.getID());
             pstmt.executeUpdate();
 
             pstmt.close();
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
@@ -110,9 +115,9 @@ public class QUIZZES_Service {
 
             pstmt.close();
             conn.close();
-
+            
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 }

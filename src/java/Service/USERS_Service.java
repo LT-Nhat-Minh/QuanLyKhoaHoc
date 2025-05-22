@@ -77,12 +77,18 @@ public class USERS_Service {
         try{
             Connection conn = DBConnection.getConnection();
             String sql = "INSERT INTO USERS (username, password, email, roleID) VALUES (?, ?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, user.getUserName());
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getEmail());
             pstmt.setInt(4, user.getRoleID());
             pstmt.executeUpdate();
+
+            
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                user.setID(generatedKeys.getInt(1));
+            }
             
             pstmt.close();
             conn.close();   
