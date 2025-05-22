@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "api_LESSONS_Controller", urlPatterns = {"/api/lessons/*"})
+@WebServlet(name = "api_LESSONS_Controller", urlPatterns = {"/api/lessons"})
 public class api_LESSONS_Controller extends HttpServlet {
 
     @Override

@@ -109,64 +109,13 @@ public class api_USERS_Controller extends HttpServlet {
             response.getWriter().write(new Gson().toJson(user));
 
         } catch (Exception e) {
-            handleError(response, e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
-    }
-
-    setCorsHeaders(response);
-    response.setContentType("application/json;charset=UTF-8");
-
-    try {
-        String contentType = request.getContentType();
-        USERS user = new USERS();
-
-        if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
-            user.setUserName(request.getParameter("userName"));
-            user.setEmail(request.getParameter("email"));
-            user.setPassword(request.getParameter("password"));
-
-            String roleStr = request.getParameter("roleID");
-            try {
-                user.setRoleID(Integer.parseInt(roleStr));
-            } catch (NumberFormatException e) {
-                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid roleID format");
-                return;
-            }
-
-        } else {
-            sendError(response, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported content type");
-            return;
-        }
-
-        if (user.getUserName() == null || user.getEmail() == null || user.getPassword() == null) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Missing required fields");
-            return;
-        }
-
-        USERS_Service userService = new USERS_Service();
-        userService.createUser(user);
-
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().write("{\"message\": \"User created successfully\"}");
-
-    } catch (Exception e) {
-        handleError(response, e); // hoặc log lỗi tại đây
-        e.printStackTrace(); // In lỗi chi tiết trong console
     }
     
     @Override
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-    
-    private void setCorsHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    } 
-   private void handleError(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(500);
-        response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-        e.printStackTrace();
-    }
 }
