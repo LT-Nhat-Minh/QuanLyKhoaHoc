@@ -18,12 +18,15 @@ public class QUIZZES {
         this.title = title;
         this.question = question;
     }
+
+    public QUIZZES() {
+    }
     
-    public int getQuizzID(){
+    public int getID(){
         return id;
     }
     
-    public String getQuizzTitle(){
+    public String getTitle(){
         return title;
     }
     
@@ -32,17 +35,18 @@ public class QUIZZES {
     } 
     
 
-    public void setQuizzID( int id){
+    public void setID( int id){
         this.id = id;
     }
     
-    public void setQuizzTitle(String title){
+    public void setTitle(String title){
         this.title = title;
     }
     
     public void setQuestion(String question){
         this.question = question;
     } 
+
     
    
     
