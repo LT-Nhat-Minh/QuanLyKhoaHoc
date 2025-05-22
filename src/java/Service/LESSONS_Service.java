@@ -12,7 +12,6 @@ public class LESSONS_Service {
 
     public List<LESSONS> getAllLessons() {
         List<LESSONS> lessonList = new ArrayList<>();
-
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "SELECT * FROM LESSONS";
@@ -32,14 +31,14 @@ public class LESSONS_Service {
             pstmt.close();
             conn.close();
 
+            return lessonList;
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
-
-        return lessonList;
     }
 
     public LESSONS getLessonById(int id) {
+        LESSONS lesson = new LESSONS();
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "SELECT * FROM LESSONS WHERE id = ?";
@@ -48,23 +47,20 @@ public class LESSONS_Service {
             ResultSet result = pstmt.executeQuery();
 
             if (result.next()) {
-                LESSONS lesson = new LESSONS();
                 lesson.setID(result.getInt("id"));
                 lesson.setTitle(result.getString("title"));
                 lesson.setContent(result.getString("content"));
                 lesson.setVideoURL(result.getString("videoURL"));
-                return lesson;
             }
 
             result.close();
             pstmt.close();
             conn.close();
 
+            return lesson;
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
-
-        return null;
     }
 
     public void createLesson(LESSONS lesson) {
@@ -81,7 +77,7 @@ public class LESSONS_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
@@ -100,7 +96,7 @@ public class LESSONS_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
@@ -116,7 +112,7 @@ public class LESSONS_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 }

@@ -13,7 +13,15 @@ public class LESSONS {
     private String title;    
     private String content;
     private String videoURL;
+    
     public LESSONS(){}
+
+    public LESSONS(String title, String content, String videoURL){
+        this.title = title;
+        this.content = content;
+        this.videoURL = videoURL;
+    }
+
     public LESSONS(int id, String title, String content, String videoURL){
         this.id = id;
         this.title = title;

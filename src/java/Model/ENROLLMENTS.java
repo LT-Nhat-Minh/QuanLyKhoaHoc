@@ -31,6 +31,5 @@ public class ENROLLMENTS{
     
     public void setProgress( boolean progress){
         this.progress = progress;
-        
     }
 }

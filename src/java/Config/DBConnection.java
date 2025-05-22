@@ -13,12 +13,12 @@ import java.sql.DriverManager;
  */
 public class DBConnection {
     public static Connection getConnection() throws Exception {
-        String url = "jdbc:sqlserver://WIN-VSV1A4EOCDD\\\\SQLEXPRESS01:1433;;"
-                + "databaseName=testing;"
+        String url = "jdbc:sqlserver://DESKTOP-Minh118:1433;;"
+                + "databaseName=testjwt;"
                 + "encrypt=true;"
                 + "trustServerCertificate=true";
         String user = "sa";
-        String pass = "123456789";
+        String pass = "123456";
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         System.out.println("Test: ConnDB");
         return DriverManager.getConnection(url, user, pass);

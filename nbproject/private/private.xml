@@ -3,7 +3,6 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-<<<<<<< HEAD
             <file>file:/C:/Users/minhk/OneDrive/Documents/NetBeansProjects/QuanLyKhoaHoc/src/java/Model/COURSES.java</file>
             <file>file:/C:/Users/minhk/OneDrive/Documents/NetBeansProjects/QuanLyKhoaHoc/src/java/Model/QUIZZES.java</file>
             <file>file:/C:/Users/minhk/OneDrive/Documents/NetBeansProjects/QuanLyKhoaHoc/src/java/Model/USERS.java</file>
@@ -15,12 +14,6 @@
             <file>file:/C:/Users/minhk/OneDrive/Documents/NetBeansProjects/QuanLyKhoaHoc/src/java/Controller/api_USERS_Controller.java</file>
             <file>file:/C:/Users/minhk/OneDrive/Documents/NetBeansProjects/QuanLyKhoaHoc/src/java/Controller/api_auth_Controller.java</file>
             <file>file:/C:/Users/minhk/OneDrive/Documents/NetBeansProjects/QuanLyKhoaHoc/src/java/Service/auth_Service.java</file>
-=======
-            <file>file:/D:/netbean/DoAnIE303/src/java/Controller/api_USERS_Controller.java</file>
-            <file>file:/D:/netbean/DoAnIE303/src/java/Service/USERS_Service.java</file>
-            <file>file:/D:/netbean/DoAnIE303/src/java/Config/DBConnection.java</file>
-            <file>file:/D:/netbean/DoAnIE303/web/index.html</file>
->>>>>>> 126ca8d72e3f5c85042769bbc18ff05a7f3eeb82
         </group>
     </open-files>
 </project-private>

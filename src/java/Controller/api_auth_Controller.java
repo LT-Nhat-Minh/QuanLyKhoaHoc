@@ -76,7 +76,7 @@ public class api_auth_Controller extends HttpServlet {
         String path = request.getPathInfo();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        System.out.println("path" + path);
+//        System.out.println("path" + path);
         try {
             if (path.equals("/login")) {
                 String email = request.getParameter("email");

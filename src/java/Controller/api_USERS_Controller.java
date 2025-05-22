@@ -59,6 +59,7 @@ public class api_USERS_Controller extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -73,14 +74,15 @@ public class api_USERS_Controller extends HttpServlet {
 
                 // Check if get user by id, the request will have a query id
                 String idParam = request.getParameter("id");
-                USERS_Service userService = new USERS_Service();
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
+                
+                response.setContentType("application/json;charset=UTF-8");
 
                 if (idParam != null) {
                     // Get user by id
                     try {
                         int id = Integer.parseInt(idParam);
+
+                        USERS_Service userService = new USERS_Service();
                         USERS user = userService.getUserById(id);
                         if (user != null) {
                             response.setStatus(HttpServletResponse.SC_OK);
@@ -96,6 +98,7 @@ public class api_USERS_Controller extends HttpServlet {
                 } else {
                     // Get all users
                     System.out.println("Get all users");
+                    USERS_Service userService = new USERS_Service();
                     List<USERS> userList = userService.getAllUsers();
                     System.out.println(userList);
                     if (userList != null) {
@@ -106,7 +109,6 @@ public class api_USERS_Controller extends HttpServlet {
                         response.getWriter().write("{\"error\": \"No users found\"}");
                     }
                 }
-
             } else {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.getWriter().write("{\"message\": \"You do not have permission to access this resource\"}");
@@ -127,8 +129,30 @@ public class api_USERS_Controller extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
+            throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+
+        try {
+            String userName = request.getParameter("userName");
+            String email = request.getParameter("email");
+            String password = request.getParameter("password");
+            String roleID = request.getParameter("roleID");
+
+            if (userName == null || email == null || password == null || roleID == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\": \"Missing required parameters\"}");
+                return;
+            }
+
+            USERS_Service userService = new USERS_Service();
+            USERS user = new USERS(userName, email, password, Integer.parseInt(roleID));
+            userService.createUser(user);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().write(new Gson().toJson(user));
+
+        } catch (Exception e) {
+            handleError(response, e);
+        }
     }
 
     /**
@@ -140,5 +164,15 @@ public class api_USERS_Controller extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
+    
+    private void setCorsHeaders(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    } 
+   private void handleError(HttpServletResponse response, Exception e) throws IOException {
+        response.setStatus(500);
+        response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        e.printStackTrace();
+    }
 }

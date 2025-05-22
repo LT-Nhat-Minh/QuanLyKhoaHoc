@@ -15,6 +15,13 @@ public class COURSES {
     private double price;
     
     public COURSES(){}
+
+    public COURSES(String title, String description, double price){
+        this.title = title;
+        this.description = description;
+        this.price = price;
+    }
+    
     public COURSES(int id, String title, String description, double price){
         this.id = id;
         this.title = title;

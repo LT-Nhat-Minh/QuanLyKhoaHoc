@@ -41,16 +41,13 @@ public class USERS_Service {
             conn.close();
 
             return userList;
-
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            return null;
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
     public USERS getUserById(int id) {
         USERS user = new USERS();
-
         try{
             Connection conn = DBConnection.getConnection();
             String sql = "SELECT * FROM USERS WHERE id = ?";
@@ -72,8 +69,7 @@ public class USERS_Service {
         
             return user;
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            return null;
+            throw new RuntimeException("Error: " + e.getMessage());
         }     
     }
 
@@ -92,7 +88,7 @@ public class USERS_Service {
             conn.close();   
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
@@ -112,7 +108,7 @@ public class USERS_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
@@ -128,7 +124,7 @@ public class USERS_Service {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 }
