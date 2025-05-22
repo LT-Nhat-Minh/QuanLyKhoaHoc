@@ -44,6 +44,7 @@ public class api_LESSONS_Controller extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         try {
+            int courseID = Integer.parseInt(request.getParameter("courseID"));
             String title = request.getParameter("title");
             String content = request.getParameter("content");
             String videoURL = request.getParameter("videoURL");
@@ -54,7 +55,7 @@ public class api_LESSONS_Controller extends HttpServlet {
             }
 
             // Create lesson
-            LESSONS lesson = new LESSONS(title, content, videoURL);
+            LESSONS lesson = new LESSONS(courseID, title, content, videoURL);
             LESSONS_Service lessonService = new LESSONS_Service();
             lessonService.createLesson(lesson);
 

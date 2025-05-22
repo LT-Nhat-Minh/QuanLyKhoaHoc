@@ -21,7 +21,7 @@ public class api_QUIZZES_Controller extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        setCorsHeaders(response);
+        
         response.setContentType("application/json;charset=UTF-8");
 
         try {
@@ -57,7 +57,7 @@ public class api_QUIZZES_Controller extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            handleError(response, e);
+            response.getWriter().write("{\"error\":}" + e.getMessage());
         }
     }
 
@@ -130,7 +130,7 @@ public class api_QUIZZES_Controller extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"Invalid lesson ID format\"}");
         } catch (Exception e) {
-            handleError(response, e);
+            response.getWriter().write("{\"error\":}" + e.getMessage());
         }
     }
 
@@ -173,21 +173,7 @@ public class api_QUIZZES_Controller extends HttpServlet {
     }
 
 
+  
+
    
-
-    private void setCorsHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    }
-
-    private void handleError(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(500);
-        response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-        e.printStackTrace();
-    }
-
-    private void sendError(HttpServletResponse response, int SC_BAD_REQUEST, String missing_required_fields) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }

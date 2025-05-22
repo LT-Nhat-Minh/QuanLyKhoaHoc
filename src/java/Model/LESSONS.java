@@ -10,20 +10,23 @@ package Model;
  */
 public class LESSONS {
     protected int id;
+    private int courseID;
     private String title;    
     private String content;
     private String videoURL;
     
     public LESSONS(){}
 
-    public LESSONS(String title, String content, String videoURL){
+    public LESSONS(int courseID, String title, String content, String videoURL){
+        this.courseID = courseID;
         this.title = title;
         this.content = content;
         this.videoURL = videoURL;
     }
 
-    public LESSONS(int id, String title, String content, String videoURL){
+    public LESSONS(int id,int courseID, String title, String content, String videoURL){
         this.id = id;
+        this.courseID = courseID;
         this.title = title;
         this.content = content;
         this.videoURL = videoURL;
@@ -32,7 +35,9 @@ public class LESSONS {
     public int getID(){
         return id;
     }
-    
+    public int getCourseID(){
+        return courseID;
+    }
     public String getTitle(){
         return title;
     }
@@ -47,6 +52,10 @@ public class LESSONS {
     
     public void setID( int id){
         this.id = id;
+    }
+    
+    public void setCourseID( int courseID){
+        this.courseID = courseID;
     }
     
     public void setTitle(String title){

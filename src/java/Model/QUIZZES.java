@@ -10,11 +10,19 @@ package Model;
  */
 public class QUIZZES {
     protected int id;
+    private int lessonID;
     private String title;    
     private String question;
     
-    public QUIZZES(int id, String title, String question){
+    public QUIZZES(int lessonID, String title, String question){
+        this.lessonID = lessonID;
+        this.title = title;
+        this.question = question;
+    }
+    
+    public QUIZZES(int id,int lessonID, String title, String question){
         this.id = id;
+        this.lessonID = lessonID;
         this.title = title;
         this.question = question;
     }
@@ -25,7 +33,9 @@ public class QUIZZES {
     public int getID(){
         return id;
     }
-    
+    public int getLessonID(){
+        return lessonID;
+    }
     public String getTitle(){
         return title;
     }
@@ -38,6 +48,11 @@ public class QUIZZES {
     public void setID( int id){
         this.id = id;
     }
+    
+    public void setLessonID( int lessonID){
+        this.lessonID = lessonID;
+    }
+    
     
     public void setTitle(String title){
         this.title = title;
