@@ -23,6 +23,10 @@ public class api_QUIZZES_Controller extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 6bb8107d3c041bedfd87194dec1e03b2527a3809
         response.setContentType("application/json;charset=UTF-8");
 
         try {
@@ -44,8 +48,12 @@ public class api_QUIZZES_Controller extends HttpServlet {
                 response.getWriter().write(new Gson().toJson(lessonList));
             }
         } catch (Exception e) {
+<<<<<<< HEAD
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+=======
+            response.getWriter().write("{\"error\":}" + e.getMessage());
+>>>>>>> 6bb8107d3c041bedfd87194dec1e03b2527a3809
         }
     }
 

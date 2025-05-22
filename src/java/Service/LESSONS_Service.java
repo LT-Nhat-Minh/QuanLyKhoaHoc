@@ -21,6 +21,7 @@ public class LESSONS_Service {
             while (result.next()) {
                 LESSONS lesson = new LESSONS();
                 lesson.setID(result.getInt("id"));
+                lesson.setCourseID(result.getInt("courseID"));
                 lesson.setTitle(result.getString("title"));
                 lesson.setContent(result.getString("content"));
                 lesson.setVideoURL(result.getString("videoURL"));
@@ -48,6 +49,7 @@ public class LESSONS_Service {
 
             if (result.next()) {
                 lesson.setID(result.getInt("id"));
+                lesson.setID(result.getInt("courseID"));
                 lesson.setTitle(result.getString("title"));
                 lesson.setContent(result.getString("content"));
                 lesson.setVideoURL(result.getString("videoURL"));
@@ -90,12 +92,13 @@ public class LESSONS_Service {
     public void updateLesson(LESSONS lesson) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE LESSONS SET title = ?, content = ?, videoURL = ? WHERE id = ?";
+            String sql = "UPDATE LESSONS SET courseID = ?, title = ?, content = ?, videoURL = ? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, lesson.getTitle());
-            pstmt.setString(2, lesson.getContent());
-            pstmt.setString(3, lesson.getVideoURL());
-            pstmt.setInt(4, lesson.getID());
+            pstmt.setInt(1, lesson.getCourseID());
+            pstmt.setString(2, lesson.getTitle());
+            pstmt.setString(3, lesson.getContent());
+            pstmt.setString(4, lesson.getVideoURL());
+            pstmt.setInt(5, lesson.getID());
             pstmt.executeUpdate();
 
             pstmt.close();

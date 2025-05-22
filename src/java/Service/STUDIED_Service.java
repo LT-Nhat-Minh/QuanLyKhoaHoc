@@ -1,102 +1,77 @@
 package Service;
 
 import Config.DBConnection;
-import Model.QUIZZES;
+import Model.STUDIES;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QUIZZES_Service {
+public class STUDIED_Service {
 
-    public List<QUIZZES> getAllQuizzes() {
-        List<QUIZZES> quizList = new ArrayList<>();
-
+    public List<STUDIES> getAllStudiedRecords() {
+        List<STUDIES> studiedList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM QUIZZES";
+            String sql = "SELECT * FROM STUDIED";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet result = pstmt.executeQuery();
 
             while (result.next()) {
-                QUIZZES quiz = new QUIZZES();
-                quiz.setID(result.getInt("id"));
-                quiz.setLessonID(result.getInt("lessonID"));
-                quiz.setTitle(result.getString("title"));
-                quiz.setQuestion(result.getString("question"));
-                quizList.add(quiz);
+                STUDIES studied = new STUDIES();
+                studied.setUserId(result.getInt("userId"));
+                studied.setLessonId(result.getInt("lessonId"));
+                studied.setStudiedDate(result.getTimestamp("studiedDate"));
+                studied.setCompleted(result.getDouble("isCompleted"));
+                studiedList.add(studied);
             }
 
             result.close();
             pstmt.close();
             conn.close();
 
+            return studiedList;
         } catch (Exception e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
-
-        return quizList;
     }
 
-    public QUIZZES getQuizById(int id) {
+    public STUDIES getStudiedRecordById(int id) {
+        STUDIES studied = new STUDIES();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM QUIZZES WHERE id = ?";
+            String sql = "SELECT * FROM STUDIED WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
             ResultSet result = pstmt.executeQuery();
 
             if (result.next()) {
-                QUIZZES quiz = new QUIZZES();
-                quiz.setID(result.getInt("id"));
-                quiz.setLessonID(result.getInt("lessonID"));
-                quiz.setTitle(result.getString("title"));
-                quiz.setQuestion(result.getString("question"));
-                return quiz;
+                studied.setUserId(result.getInt("userId"));
+                studied.setLessonId(result.getInt("lessonId"));
+                studied.setStudiedDate(result.getTimestamp("studiedDate"));
+                studied.setCompleted(result.getDouble("isCompleted"));
             }
 
             result.close();
             pstmt.close();
             conn.close();
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
-
-        return null;
-    }
-
-    public void createQuiz(QUIZZES quiz) {
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO QUIZZES (title, question) VALUES (?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, quiz.getTitle());
-            pstmt.setString(2, quiz.getQuestion());
-            pstmt.executeUpdate();
-
-            ResultSet generatedKeys = pstmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                quiz.setID(generatedKeys.getInt(1));
-            }
-
-            pstmt.close();
-            conn.close();
-
+            return studied;
         } catch (Exception e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
 
-    public void updateQuiz(QUIZZES quiz) {
+    public void createStudiedRecord(STUDIES studied) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE QUIZZES SET getLessonID = ?, title = ?, question = ? WHERE id = ?";
+            String sql = "INSERT INTO STUDIED (userId, lessonId, studiedDate, isCompleted) VALUES (?, ?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, quiz.getTitle());
-            pstmt.setString(2, quiz.getQuestion());
-            pstmt.setInt(3, quiz.getID());
+            pstmt.setInt(1, studied.getUserId());
+            pstmt.setInt(2, studied.getLessonId());
+            pstmt.setTimestamp(3, studied.getStudiedDate());
+            pstmt.setDouble(4, studied.isCompleted());
             pstmt.executeUpdate();
 
             pstmt.close();
@@ -107,10 +82,29 @@ public class QUIZZES_Service {
         }
     }
 
-    public void deleteQuiz(int id) {
+    public void updateStudiedRecord(STUDIES studied) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "DELETE FROM QUIZZES WHERE id = ?";
+            String sql = "UPDATE STUDIED SET userId = ?, lessonId = ?, studiedDate = ?, isCompleted = ? WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, studied.getUserId());
+            pstmt.setInt(2, studied.getLessonId());
+            pstmt.setTimestamp(3, studied.getStudiedDate());
+            pstmt.setDouble(4, studied.isCompleted());
+            pstmt.executeUpdate();
+
+            pstmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
+    public void deleteStudiedRecord(int id) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "DELETE FROM STUDIED WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
             pstmt.executeUpdate();

@@ -16,10 +16,10 @@ public class USERS {
 
     public USERS() {}
 
-    public USERS(String userName, String password, String email, int roleID) {
+    public USERS(String userName,  String email, String password, int roleID) {
         this.userName = userName;
-        this.password = password;
         this.email = email;
+        this.password = password;
         this.roleID = roleID;
     }
 
