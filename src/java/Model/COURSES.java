@@ -13,20 +13,23 @@ public class COURSES {
     private String title;    
     private String description;
     private double price;
+    private int createdByUserID;
     
     public COURSES(){}
 
-    public COURSES(String title, String description, double price){
+    public COURSES(String title, String description, double price, int createdByUserID){
         this.title = title;
         this.description = description;
         this.price = price;
+        this.createdByUserID = createdByUserID;
     }
     
-    public COURSES(int id, String title, String description, double price){
+    public COURSES(int id, String title, String description, double price, int createdByUserID){
         this.id = id;
         this.title = title;
         this.description = description;
         this.price = price;
+        this.createdByUserID = createdByUserID;
     }
     
     public int getID(){
@@ -45,6 +48,10 @@ public class COURSES {
         return price;
     }
     
+    public int getCreatedUserByID(){
+        return createdByUserID;
+    }
+    
     public void setID( int id){
         this.id = id;
     }
@@ -61,6 +68,8 @@ public class COURSES {
         this.price = price;
     }
     
-    
+    public void setCreatedUserByID( int createdUserByID){
+        this.createdByUserID = createdUserByID;
+    }
 }
 

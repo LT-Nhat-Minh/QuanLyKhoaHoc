@@ -48,7 +48,7 @@ public class LESSONS_Service {
 
             if (result.next()) {
                 lesson.setID(result.getInt("id"));
-                lesson.setID(result.getInt("courseID"));
+                lesson.setCourseID(result.getInt("courseID"));
                 lesson.setTitle(result.getString("title"));
                 lesson.setContent(result.getString("content"));
                 lesson.setVideoURL(result.getString("videoURL"));
@@ -64,14 +64,46 @@ public class LESSONS_Service {
         }
     }
 
+    
+     
+    public List<LESSONS> getLessonByCourseID(int courseID) {
+        List<LESSONS> lessonByCourseIDList = new ArrayList<>();
+
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM LESSONS WHERE courseID = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, courseID);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                LESSONS lesson = new LESSONS();
+                lesson.setID(result.getInt("id"));
+                lesson.setCourseID(result.getInt("courseID"));
+                lesson.setTitle(result.getString("title"));
+                lesson.setContent(result.getString("content"));
+                lesson.setVideoURL(result.getString("videoURL"));
+                lessonByCourseIDList.add(lesson);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return lessonByCourseIDList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
     public void createLesson(LESSONS lesson) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO LESSONS (title, content, videoURL) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO LESSONS (courseID, title, content, videoURL) VALUES (?,?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, lesson.getTitle());
-            pstmt.setString(2, lesson.getContent());
-            pstmt.setString(3, lesson.getVideoURL());
+            pstmt.setInt(1,lesson.getCourseID());
+            pstmt.setString(2, lesson.getTitle());
+            pstmt.setString(3, lesson.getContent());
+            pstmt.setString(4, lesson.getVideoURL());
             pstmt.executeUpdate();
 
             ResultSet generatedKeys = pstmt.getGeneratedKeys();
@@ -123,4 +155,8 @@ public class LESSONS_Service {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
+
+    
+    
+
 }

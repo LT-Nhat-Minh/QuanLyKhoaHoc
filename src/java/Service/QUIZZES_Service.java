@@ -25,6 +25,7 @@ public class QUIZZES_Service {
                 quiz.setLessonID(result.getInt("lessonID"));
                 quiz.setTitle(result.getString("title"));
                 quiz.setQuestion(result.getString("question"));
+                quiz.setCorrectAnswer(result.getInt("correctAnswer"));
                 quizList.add(quiz);
             }
 
@@ -53,6 +54,7 @@ public class QUIZZES_Service {
                 quiz.setLessonID(result.getInt("lessonID"));
                 quiz.setTitle(result.getString("title"));
                 quiz.setQuestion(result.getString("question"));
+                quiz.setCorrectAnswer(result.getInt("correctAnswer"));
                 return quiz;
             }
 
@@ -67,13 +69,46 @@ public class QUIZZES_Service {
         return null;
     }
 
+    
+     public List<QUIZZES> getQuizByLessonID(int LessonID) {
+        List<QUIZZES> quizByLessonIDList = new ArrayList<>();
+
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM QUIZZES WHERE lessonID = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, LessonID);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                QUIZZES quiz = new QUIZZES();
+                quiz.setID(result.getInt("id"));
+                quiz.setLessonID(result.getInt("lessonID"));
+                quiz.setTitle(result.getString("title"));
+                quiz.setQuestion(result.getString("question"));
+                quiz.setCorrectAnswer(result.getInt("correctAnswer"));
+                
+                quizByLessonIDList.add(quiz);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return quizByLessonIDList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
     public void createQuiz(QUIZZES quiz) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO QUIZZES (title, question) VALUES (?, ?)";
+            String sql = "INSERT INTO QUIZZES (lessonId, title, question, correctAnswer) VALUES (?, ?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, quiz.getTitle());
-            pstmt.setString(2, quiz.getQuestion());
+            pstmt.setInt(1, quiz.getLessonID());
+            pstmt.setString(2, quiz.getTitle());
+            pstmt.setString(3, quiz.getQuestion());
+            pstmt.setInt(4, quiz.getCorrectAnswer());
             pstmt.executeUpdate();
 
             ResultSet generatedKeys = pstmt.getGeneratedKeys();
@@ -89,14 +124,15 @@ public class QUIZZES_Service {
         }
     }
 
-    public void updateQuiz(QUIZZES quiz) {
+    public void updateQuiz(QUIZZES quiz) {  
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE QUIZZES SET getLessonID = ?, title = ?, question = ? WHERE id = ?";
+            String sql = "UPDATE QUIZZES SET getLessonID = ?, title = ?, question = ?, correctAnswer=? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, quiz.getTitle());
             pstmt.setString(2, quiz.getQuestion());
-            pstmt.setInt(3, quiz.getID());
+            pstmt.setInt(3, quiz.getCorrectAnswer());
+            pstmt.setInt(4, quiz.getID());
             pstmt.executeUpdate();
 
             pstmt.close();

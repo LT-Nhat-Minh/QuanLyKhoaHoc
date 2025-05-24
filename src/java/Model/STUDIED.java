@@ -36,7 +36,7 @@ public class STUDIED {
         return studiedDate;
     }
 
-    public double isCompleted() {
+    public double getIsCompleted() {
         return isCompleted;
     }
 
@@ -57,4 +57,6 @@ public class STUDIED {
     public void setCompleted(double isCompleted) {
         this.isCompleted = isCompleted;
     }
+
+    
 } 

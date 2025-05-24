@@ -13,27 +13,27 @@ public class QUIZZES {
     private int lessonID;
     private String title;    
     private String question;
+    private int correctAnswer;
 
     public QUIZZES(){}
 
-    public QUIZZES(String title, String question){
-        this.title = title;
-        this.question = question;
-    }
-    
-    public QUIZZES(int lessonID, String title, String question){
+    public QUIZZES(int lessonID, String title, String question,int correctAnswer){
         this.lessonID = lessonID;
         this.title = title;
         this.question = question;
+        this.correctAnswer = correctAnswer;
     }
     
-    public QUIZZES(int id,int lessonID, String title, String question){
+    public QUIZZES(int id,int lessonID, String title, String question, int correctAnswer){
         this.id = id;
         this.lessonID = lessonID;
         this.title = title;
         this.question = question;
+        this.correctAnswer = correctAnswer;
+
     }
-    
+
+
     public int getID(){
         return id;
     }
@@ -48,7 +48,9 @@ public class QUIZZES {
         return question;
     } 
     
-
+    public int getCorrectAnswer(){
+        return correctAnswer;
+    }
     public void setID( int id){
         this.id = id;
     }
@@ -66,7 +68,9 @@ public class QUIZZES {
         this.question = question;
     } 
 
-    
+    public void setCorrectAnswer(int correctAnswer){
+        this.correctAnswer = correctAnswer;
+    }
    
     
 }
