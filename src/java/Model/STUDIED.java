@@ -6,17 +6,17 @@ import java.sql.Timestamp;
  *
  * @author 22521
  */
-public class STUDIES {
+public class STUDIED {
     private int userId;
     private int lessonId;
     private Timestamp studiedDate;
     private double isCompleted;
     
-    public STUDIES() {}
+    public STUDIED() {}
 
     
     
-    public STUDIES( int userId, int lessonId, Timestamp studiedDate, double isCompleted) {
+    public STUDIED( int userId, int lessonId, Timestamp studiedDate, double isCompleted) {
         this.userId = userId;
         this.lessonId = lessonId;
         this.studiedDate = studiedDate;

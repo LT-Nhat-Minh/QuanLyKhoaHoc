@@ -7,7 +7,7 @@ package Model;
 public class ANSWERS {
     private int userId;
     private int quizId;
-    private int answer;
+    private int answer;//(1,2,3,4)
     private String updatedAt;
     
     public ANSWERS() {}

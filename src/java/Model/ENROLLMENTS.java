@@ -12,6 +12,7 @@ public class ENROLLMENTS {
     private int courseId;
     private Timestamp enrollmentDate;
     private String status; // e.g., "active", "completed", "cancelled"
+    private String feedbackFromStudent;
     
     public ENROLLMENTS() {}
     

@@ -1,7 +1,7 @@
 package Service;
 
 import Config.DBConnection;
-import Model.STUDIES;
+import Model.STUDIED;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,8 +10,8 @@ import java.util.List;
 
 public class STUDIED_Service {
 
-    public List<STUDIES> getAllStudiedRecords() {
-        List<STUDIES> studiedList = new ArrayList<>();
+    public List<STUDIED> getAllStudiedRecords() {
+        List<STUDIED> studiedList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "SELECT * FROM STUDIED";
@@ -19,7 +19,7 @@ public class STUDIED_Service {
             ResultSet result = pstmt.executeQuery();
 
             while (result.next()) {
-                STUDIES studied = new STUDIES();
+                STUDIED studied = new STUDIED();
                 studied.setUserId(result.getInt("userId"));
                 studied.setLessonId(result.getInt("lessonId"));
                 studied.setStudiedDate(result.getTimestamp("studiedDate"));
@@ -37,8 +37,8 @@ public class STUDIED_Service {
         }
     }
 
-    public STUDIES getStudiedRecordById(int id) {
-        STUDIES studied = new STUDIES();
+    public STUDIED getStudiedRecordById(int id) {
+        STUDIED studied = new STUDIED();
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "SELECT * FROM STUDIED WHERE id = ?";
@@ -63,7 +63,7 @@ public class STUDIED_Service {
         }
     }
 
-    public void createStudiedRecord(STUDIES studied) {
+    public void createStudiedRecord(STUDIED studied) {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "INSERT INTO STUDIED (userId, lessonId, studiedDate, isCompleted) VALUES (?, ?, ?, ?)";
@@ -82,7 +82,7 @@ public class STUDIED_Service {
         }
     }
 
-    public void updateStudiedRecord(STUDIES studied) {
+    public void updateStudiedRecord(STUDIED studied) {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = "UPDATE STUDIED SET userId = ?, lessonId = ?, studiedDate = ?, isCompleted = ? WHERE id = ?";
