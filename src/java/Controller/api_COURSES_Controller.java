@@ -52,14 +52,15 @@ public class api_COURSES_Controller extends HttpServlet {
             String title = request.getParameter("title");
             String description = request.getParameter("description");
             double price = Double.parseDouble(request.getParameter("price"));
+            int createdByUserID = Integer.parseInt(request.getParameter("createdByUserID"));
 
             // Validate input
-            if (title == null || description == null || price <= 0) {
+            if (title == null || description == null || price <= 0 ) {
                 throw new Exception("Missing required fields");
             }
 
             // Create course
-            COURSES course = new COURSES(title, description, price);
+            COURSES course = new COURSES(title, description, price, createdByUserID);
             COURSES_Service courseService = new COURSES_Service();
             courseService.createCourse(course);
 
@@ -85,15 +86,16 @@ public class api_COURSES_Controller extends HttpServlet {
         String title = params.get("title");
         String description = params.get("description");
         double price = Double.parseDouble(params.get("price"));
+        int createdByUserID = Integer.parseInt(params.get("createdByUserID"));
 
         // Validate data
-        if (title == null || description == null || price <= 0) {
+        if (title == null || description == null || price <= 0 ) {
             throw new Exception("Missing required fields");
         }
 
         // Update course
         if (id > 0) {
-            COURSES course = new COURSES(id, title, description, price);
+            COURSES course = new COURSES(id, title, description, price, createdByUserID);
             COURSES_Service courseService = new COURSES_Service();
             courseService.updateCourse(course);
 

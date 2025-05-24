@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.COURSES;
 import Service.LESSONS_Service;
 import Model.LESSONS;
 import Utils.parseForm;
@@ -28,13 +29,23 @@ public class api_LESSONS_Controller extends HttpServlet {
 
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(new Gson().toJson(lesson));
-            } else {
-                // Get all lessons
+            } else if(request.getParameter("courseID") != null ) {
+                
+                int courseID = Integer.parseInt(request.getParameter("courseID"));
+                LESSONS_Service lessonService = new LESSONS_Service();
+                List<LESSONS> lessons = lessonService.getLessonByCourseID(courseID);
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(new Gson().toJson(lessons));
+                
+            }
+            else{
                 LESSONS_Service lessonService = new LESSONS_Service();
                 List<LESSONS> lessonList = lessonService.getAllLessons();
 
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(new Gson().toJson(lessonList));
+                
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

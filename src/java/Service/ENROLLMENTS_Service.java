@@ -23,7 +23,9 @@ public class ENROLLMENTS_Service {
                 enrollment.setUserId(result.getInt("userId"));
                 enrollment.setCourseId(result.getInt("courseId"));
                 enrollment.setEnrollmentDate(result.getTimestamp("enrollmentDate"));
-                enrollment.setStatus(result.getString("status"));
+                enrollment.setStatusID(result.getInt("statusID"));                
+                enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
+
                 enrollmentList.add(enrollment);
             }
 
@@ -50,7 +52,8 @@ public class ENROLLMENTS_Service {
                 enrollment.setUserId(result.getInt("userId"));
                 enrollment.setCourseId(result.getInt("courseId"));
                 enrollment.setEnrollmentDate(result.getTimestamp("enrollmentDate"));
-                enrollment.setStatus(result.getString("status"));
+                enrollment.setStatusID(result.getInt("statusId"));
+                enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
             }
 
             result.close();
@@ -63,57 +66,105 @@ public class ENROLLMENTS_Service {
         }
     }
 
-    public void createEnrollment(ENROLLMENTS enrollment) {
+    public ENROLLMENTS createEnrollment(ENROLLMENTS enrollment) {
         try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO ENROLLMENTS (userId, courseId, enrollmentDate, status) VALUES (?, ?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, enrollment.getUserId());
-            pstmt.setInt(2, enrollment.getCourseId());
-            pstmt.setTimestamp(3, enrollment.getEnrollmentDate());
-            pstmt.setString(4, enrollment.getStatus());
-            pstmt.executeUpdate();
-
-            pstmt.close();
-            conn.close();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+        Connection conn = DBConnection.getConnection();
+        
+        // Kiểm tra xem enrollment đã tồn tại chưa
+        
+        String checkSql = "SELECT 1 FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(checkSql);
+        pstmt.setInt(1, enrollment.getUserId());
+        pstmt.setInt(2, enrollment.getCourseId());
+        ResultSet rs = pstmt.executeQuery();
+        
+        if (rs.next()) {
+            throw new RuntimeException("User is already enrolled in this course");
         }
+        
+        // Nếu chưa tồn tại thì tạo mới
+        String insertSql = "INSERT INTO ENROLLMENTS (userId, courseId) VALUES (?, ?)";
+        pstmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
+        pstmt.setInt(1, enrollment.getUserId());
+        pstmt.setInt(2, enrollment.getCourseId());
+        pstmt.executeUpdate();
+        
+        // Lấy thông tin vừa insert
+        String selectSql = "SELECT * FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+        pstmt = conn.prepareStatement(selectSql);
+        pstmt.setInt(1, enrollment.getUserId());
+        pstmt.setInt(2, enrollment.getCourseId());
+        rs = pstmt.executeQuery();
+        
+        if (rs.next()) {
+            enrollment.setEnrollmentDate(rs.getTimestamp("enrollmentDate"));
+            enrollment.setStatusID(rs.getInt("statusId"));
+            enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
+        }
+     
+    } catch (Exception e) {
+        throw new RuntimeException("Error creating enrollment: " + e.getMessage());
+    } 
+        return enrollment;
     }
 
     public void updateEnrollment(ENROLLMENTS enrollment) {
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE ENROLLMENTS SET userId = ?, courseId = ?, enrollmentDate = ?, status = ? WHERE id = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, enrollment.getUserId());
-            pstmt.setInt(2, enrollment.getCourseId());
-            pstmt.setTimestamp(3, enrollment.getEnrollmentDate());
-            pstmt.setString(4, enrollment.getStatus());
-            pstmt.executeUpdate();
+    try (Connection conn = DBConnection.getConnection()) {
+        String sql = "UPDATE ENROLLMENTS SET feedbackEnrollment = ? WHERE userId = ? AND courseId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, enrollment.getFeedbackEnrollment());
+        pstmt.setInt(2, enrollment.getUserId());
+        pstmt.setInt(3, enrollment.getCourseId());
+        pstmt.executeUpdate();
+    } catch (Exception e) {
+        throw new RuntimeException("Error: " + e.getMessage());
+    }
+}
 
-            pstmt.close();
-            conn.close();
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+    public void deleteEnrollment(int userId, int courseId) {
+    try (Connection conn = DBConnection.getConnection()) {
+        String sql = "DELETE FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, userId);
+        pstmt.setInt(2, courseId);
+        pstmt.executeUpdate();
+    } catch (Exception e) {
+        throw new RuntimeException("Error: " + e.getMessage());
+    }
+}
+    
+    public ENROLLMENTS getEnrollmentByUserIdAndCourseId(int userId, int courseId) {
+    ENROLLMENTS enrollment = null;
+
+    try {
+        Connection conn = DBConnection.getConnection();
+
+        String sql = "SELECT * FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, userId);
+        pstmt.setInt(2, courseId);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            
+            enrollment = new ENROLLMENTS();
+            enrollment.setUserId(rs.getInt("userId"));
+            enrollment.setCourseId(rs.getInt("courseId"));
+            enrollment.setEnrollmentDate(rs.getTimestamp("enrollmentDate"));
+            enrollment.setStatusID(rs.getInt("statusId"));
+            enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
+            
         }
+
+    } catch (Exception e) {
+        throw new RuntimeException("Error getting enrollment: " + e.getMessage());
     }
 
-    public void deleteEnrollment(int id) {
-        try {
-            Connection conn = DBConnection.getConnection();
-            String sql = "DELETE FROM ENROLLMENTS WHERE id = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
+    return enrollment;
+}
 
-            pstmt.close();
-            conn.close();
+    
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
-    }
+
 }

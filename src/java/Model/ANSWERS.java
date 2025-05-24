@@ -32,7 +32,7 @@ public class ANSWERS {
         return answer;
     }
 
-    public String updatedAt(){
+    public String getUpdatedAt(){
         return updatedAt;
     }
 
@@ -53,7 +53,5 @@ public class ANSWERS {
         this.updatedAt = updatedAt;
     }
 
-    public String getUpdatedAt() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+
 }

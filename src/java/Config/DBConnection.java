@@ -27,7 +27,7 @@ public class DBConnection {
     
      public static Connection getConnection() throws Exception {
         String url = "jdbc:sqlserver://WIN-VSV1A4EOCDD\\SQLEXPRESS01:1433;;"
-                + "databaseName=testing;"
+                + "databaseName=qlkhonline;"
                 + "encrypt=true;"
                 + "trustServerCertificate=true";
         String user = "sa";

@@ -11,19 +11,21 @@ public class ENROLLMENTS {
     private int userId;
     private int courseId;
     private Timestamp enrollmentDate;
-    private String status; // e.g., "active", "completed", "cancelled"
+    private int statusId; // e.g., "active", "completed", "cancelled"
+    private String feedbackEnrollment;
     
     public ENROLLMENTS() {}
     
-    public ENROLLMENTS(int userId, int courseId, Timestamp enrollmentDate, String status) {
+    public ENROLLMENTS(int userId, int courseId, Timestamp enrollmentDate, int statusId, String feedbackEnrollment) {
         this.userId = userId;
         this.courseId = courseId;
         this.enrollmentDate = enrollmentDate;
-        this.status = status;
+        this.statusId = statusId;
+        this.feedbackEnrollment = feedbackEnrollment;
     }
 
     
-
+   
     public int getUserId() {
         return userId;
     }
@@ -36,11 +38,14 @@ public class ENROLLMENTS {
         return enrollmentDate;
     }
 
-    public String getStatus() {
-        return status;
+    public int getStatusID() {
+        return statusId;
     }
-
-
+    
+     public String getFeedbackEnrollment() {
+        return feedbackEnrollment;
+    }
+    
 
     public void setUserId(int userId) {
         this.userId = userId;
@@ -54,7 +59,11 @@ public class ENROLLMENTS {
         this.enrollmentDate = enrollmentDate;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setStatusID(int statusId) {
+        this.statusId = statusId;
+    }
+    
+     public void setFeedbackEnrollment(String feedbackEnrollment) {
+        this.feedbackEnrollment = feedbackEnrollment;
     }
 }
