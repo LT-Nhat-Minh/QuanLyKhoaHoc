@@ -22,10 +22,9 @@ public class ENROLLMENTS_Service {
                 ENROLLMENTS enrollment = new ENROLLMENTS();
                 enrollment.setUserId(result.getInt("userId"));
                 enrollment.setCourseId(result.getInt("courseId"));
-                enrollment.setEnrollmentDate(result.getTimestamp("enrollmentDate"));
-                enrollment.setStatusID(result.getInt("statusID"));                
+                enrollment.setCreatedAt(result.getTimestamp("createdAt"));
+                enrollment.setUpdatedAt(result.getTimestamp("updatedAt"));
                 enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
-
                 enrollmentList.add(enrollment);
             }
 
@@ -51,8 +50,8 @@ public class ENROLLMENTS_Service {
             if (result.next()) {
                 enrollment.setUserId(result.getInt("userId"));
                 enrollment.setCourseId(result.getInt("courseId"));
-                enrollment.setEnrollmentDate(result.getTimestamp("enrollmentDate"));
-                enrollment.setStatusID(result.getInt("statusId"));
+                enrollment.setCreatedAt(result.getTimestamp("createdAt"));
+                enrollment.setUpdatedAt(result.getTimestamp("updatedAt"));
                 enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
             }
 
@@ -68,53 +67,54 @@ public class ENROLLMENTS_Service {
 
     public ENROLLMENTS createEnrollment(ENROLLMENTS enrollment) {
         try {
-        Connection conn = DBConnection.getConnection();
-        
-        // Kiểm tra xem enrollment đã tồn tại chưa
-        
-        String checkSql = "SELECT 1 FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
-        PreparedStatement pstmt = conn.prepareStatement(checkSql);
-        pstmt.setInt(1, enrollment.getUserId());
-        pstmt.setInt(2, enrollment.getCourseId());
-        ResultSet rs = pstmt.executeQuery();
-        
-        if (rs.next()) {
-            throw new RuntimeException("User is already enrolled in this course");
+            Connection conn = DBConnection.getConnection();
+
+            String checkSql = "SELECT 1 FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+            PreparedStatement pstmt = conn.prepareStatement(checkSql);
+            pstmt.setInt(1, enrollment.getUserId());
+            pstmt.setInt(2, enrollment.getCourseId());
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                throw new RuntimeException("User is already enrolled in this course");
+            }
+
+            String insertSql = "INSERT INTO ENROLLMENTS (userId, courseId) VALUES (?, ?)";
+            pstmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmt.setInt(1, enrollment.getUserId());
+            pstmt.setInt(2, enrollment.getCourseId());
+            pstmt.executeUpdate();
+
+            String selectSql = "SELECT * FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+            pstmt = conn.prepareStatement(selectSql);
+            pstmt.setInt(1, enrollment.getUserId());
+            pstmt.setInt(2, enrollment.getCourseId());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                enrollment.setCreatedAt(rs.getTimestamp("createdAt"));
+                enrollment.setUpdatedAt(rs.getTimestamp("updatedAt"));
+                enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
+            }
+
+            rs.close();
+            pstmt.close();
+            conn.close();
+
+            return enrollment;
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating enrollment: " + e.getMessage());
         }
-        
-        // Nếu chưa tồn tại thì tạo mới
-        String insertSql = "INSERT INTO ENROLLMENTS (userId, courseId) VALUES (?, ?)";
-        pstmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
-        pstmt.setInt(1, enrollment.getUserId());
-        pstmt.setInt(2, enrollment.getCourseId());
-        pstmt.executeUpdate();
-        
-        // Lấy thông tin vừa insert
-        String selectSql = "SELECT * FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
-        pstmt = conn.prepareStatement(selectSql);
-        pstmt.setInt(1, enrollment.getUserId());
-        pstmt.setInt(2, enrollment.getCourseId());
-        rs = pstmt.executeQuery();
-        
-        if (rs.next()) {
-            enrollment.setEnrollmentDate(rs.getTimestamp("enrollmentDate"));
-            enrollment.setStatusID(rs.getInt("statusId"));
-            enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
-        }
-     
-    } catch (Exception e) {
-        throw new RuntimeException("Error creating enrollment: " + e.getMessage());
-    } 
-        return enrollment;
     }
 
     public void updateEnrollment(ENROLLMENTS enrollment) {
     try (Connection conn = DBConnection.getConnection()) {
-        String sql = "UPDATE ENROLLMENTS SET feedbackEnrollment = ? WHERE userId = ? AND courseId = ?";
+        String sql = "UPDATE ENROLLMENTS SET feedbackEnrollment = ?, updatedAt = ? WHERE userId = ? AND courseId = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, enrollment.getFeedbackEnrollment());
-        pstmt.setInt(2, enrollment.getUserId());
-        pstmt.setInt(3, enrollment.getCourseId());
+        pstmt.setTimestamp(2, enrollment.getUpdatedAt());
+        pstmt.setInt(3, enrollment.getUserId());
+        pstmt.setInt(4, enrollment.getCourseId());
         pstmt.executeUpdate();
     } catch (Exception e) {
         throw new RuntimeException("Error: " + e.getMessage());
@@ -151,8 +151,8 @@ public class ENROLLMENTS_Service {
             enrollment = new ENROLLMENTS();
             enrollment.setUserId(rs.getInt("userId"));
             enrollment.setCourseId(rs.getInt("courseId"));
-            enrollment.setEnrollmentDate(rs.getTimestamp("enrollmentDate"));
-            enrollment.setStatusID(rs.getInt("statusId"));
+            enrollment.setCreatedAt(rs.getTimestamp("createdAt"));
+            enrollment.setUpdatedAt(rs.getTimestamp("updatedAt"));
             enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
             
         }

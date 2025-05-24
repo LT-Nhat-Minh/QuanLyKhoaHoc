@@ -2,6 +2,7 @@ package Service;
 
 import Config.DBConnection;
 import Model.QUIZZES;
+import Model.LESSONS;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -100,6 +101,46 @@ public class QUIZZES_Service {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
+
+    public List<QUIZZES> getQuizByLessonsList(List<LESSONS> lessons) {
+        List<QUIZZES> quizList = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM QUIZZES WHERE lessonID IN (";
+            for (int i = 0; i < lessons.size(); i++) {
+                sql += "?";
+                if (i < lessons.size() - 1) {
+                    sql += ", ";
+                }
+            }
+            sql += ")";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            for (int i = 0; i < lessons.size(); i++) {
+                pstmt.setInt(i + 1, lessons.get(i).getID());
+            }
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                QUIZZES quiz = new QUIZZES();
+                quiz.setID(result.getInt("id"));
+                quiz.setLessonID(result.getInt("lessonID"));
+                quiz.setTitle(result.getString("title"));
+                quiz.setQuestion(result.getString("question"));
+                quiz.setCorrectAnswer(result.getInt("correctAnswer"));
+                quizList.add(quiz);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+
+        return quizList;
+    }
+
     public void createQuiz(QUIZZES quiz) {
         try {
             Connection conn = DBConnection.getConnection();

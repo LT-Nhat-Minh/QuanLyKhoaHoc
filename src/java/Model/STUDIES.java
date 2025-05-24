@@ -6,32 +6,30 @@ import java.sql.Timestamp;
  *
  * @author 22521
  */
-public class ENROLLMENTS {
-    
+public class STUDIES {
     private int userId;
-    private int courseId;
+    private int lessonId;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-    private String feedbackEnrollment;
     
-    public ENROLLMENTS() {}
-    
-    public ENROLLMENTS(int userId, int courseId, Timestamp createdAt, Timestamp updatedAt, String feedbackEnrollment) {
-        this.userId = userId;
-        this.courseId = courseId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.feedbackEnrollment = feedbackEnrollment;
-    }
+    public STUDIES() {}
 
     
-   
+    
+    public STUDIES( int userId, int lessonId, Timestamp createdAt, Timestamp updatedAt) {
+        this.userId = userId;
+        this.lessonId = lessonId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+
     public int getUserId() {
         return userId;
     }
 
-    public int getCourseId() {
-        return courseId;
+    public int getLessonId() {
+        return lessonId;
     }
 
     public Timestamp getCreatedAt() {
@@ -41,18 +39,15 @@ public class ENROLLMENTS {
     public Timestamp getUpdatedAt() {
         return updatedAt;
     }
-    
-     public String getFeedbackEnrollment() {
-        return feedbackEnrollment;
-    }
-    
+
+
 
     public void setUserId(int userId) {
         this.userId = userId;
     }
 
-    public void setCourseId(int courseId) {
-        this.courseId = courseId;
+    public void setLessonId(int lessonId) {
+        this.lessonId = lessonId;
     }
 
     public void setCreatedAt(Timestamp createdAt) {
@@ -62,8 +57,6 @@ public class ENROLLMENTS {
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
+
     
-     public void setFeedbackEnrollment(String feedbackEnrollment) {
-        this.feedbackEnrollment = feedbackEnrollment;
-    }
 }

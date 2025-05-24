@@ -64,7 +64,7 @@ public class api_QUIZZES_Controller extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         try{
-            int lessonId = Integer.parseInt(request.getParameter("lessonId"));
+            int lessonID = Integer.parseInt(request.getParameter("lessonID"));
             String title = request.getParameter("title");
             String question = request.getParameter("question");
             int correctAnswer = Integer.parseInt(request.getParameter("correctAnswer"));
@@ -75,7 +75,7 @@ public class api_QUIZZES_Controller extends HttpServlet {
             }
 
             // Create quiz
-            QUIZZES quiz = new QUIZZES(lessonId, title, question, correctAnswer);
+            QUIZZES quiz = new QUIZZES(lessonID, title, question, correctAnswer);
             QUIZZES_Service quizService = new QUIZZES_Service();
             quizService.createQuiz(quiz);
 

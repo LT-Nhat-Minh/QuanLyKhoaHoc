@@ -11,13 +11,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ANSWER_Service {
+public class ANSWERS_Service {
 
-    public List<ANSWERS> getAllAnswer() {
-        List<ANSWERS> scoreList = new ArrayList<>();
+    public List<ANSWERS> getAllAnswers() {
+        List<ANSWERS> scoreList = null;
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM ANSWER";
+            String sql = "SELECT * FROM ANSWERS";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet result = pstmt.executeQuery();
 
@@ -26,7 +26,8 @@ public class ANSWER_Service {
                 score.setUserId(result.getInt("userId"));
                 score.setQuizId(result.getInt("quizId"));
                 score.setAnswer(result.getInt("answer"));
-                score.setUpdatedAt(result.getString("updatedAt"));
+                score.setCreatedAt(result.getTimestamp("createdAt"));
+                score.setUpdatedAt(result.getTimestamp("updatedAt"));
                 scoreList.add(score);
             }
 
@@ -40,23 +41,82 @@ public class ANSWER_Service {
         }
     }
     
-        public ANSWERS getAnswerByQuizId(int quizId) {
-        ANSWERS answerObj = null;
+    public List<ANSWERS> getAnswersByUserId(int userId) {
+        List<ANSWERS> answerList = null;
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM ANSWER WHERE quizId = ?";
-            
+            String sql = "SELECT * FROM ANSWERS WHERE userId = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, userId);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                ANSWERS answer = new ANSWERS();
+                answer.setUserId(result.getInt("userId"));
+                answer.setQuizId(result.getInt("quizId"));
+                answer.setAnswer(result.getInt("answer"));
+                answer.setCreatedAt(result.getTimestamp("createdAt"));
+                answer.setUpdatedAt(result.getTimestamp("updatedAt"));
+                answerList.add(answer);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return answerList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
+    public List<ANSWERS> getAnswersByQuizId(int quizId) {
+        List<ANSWERS> answerList = null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM ANSWERS WHERE quizId = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, quizId);
             ResultSet result = pstmt.executeQuery();
 
             while (result.next()) {
-                
+                ANSWERS answer = new ANSWERS();
+                answer.setUserId(result.getInt("userId"));
+                answer.setQuizId(result.getInt("quizId"));
+                answer.setAnswer(result.getInt("answer"));
+                answer.setCreatedAt(result.getTimestamp("createdAt"));
+                answer.setUpdatedAt(result.getTimestamp("updatedAt"));
+                answerList.add(answer);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return answerList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
+    public ANSWERS getAnswerByUserIdAndQuizId(int userId, int quizId) {
+        ANSWERS answerObj = null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM ANSWERS WHERE userId = ? AND quizId = ?";
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, quizId);
+            ResultSet result = pstmt.executeQuery();
+
+            if (result.next()) {
+                answerObj = new ANSWERS();
                 answerObj.setUserId(result.getInt("userId"));
                 answerObj.setQuizId(result.getInt("quizId"));
                 answerObj.setAnswer(result.getInt("answer"));
-                answerObj.setUpdatedAt(result.getString("updatedAt"));
-                
+                answerObj.setCreatedAt(result.getTimestamp("createdAt"));
+                answerObj.setUpdatedAt(result.getTimestamp("updatedAt"));
             }
 
             result.close();
@@ -68,36 +128,32 @@ public class ANSWER_Service {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
-    
-
-    
 
     public void createAnswer(ANSWERS answer) {
         try {
             Connection conn = DBConnection.getConnection();
 
-            // Chèn dữ liệu, không truyền updatedAt vì SQL mặc định GETDATE()
-            String sql = "INSERT INTO ANSWER (userId, quizId, answer) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO ANSWERS (userId, quizId, answer) VALUES (?, ?, ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, answer.getUserId());
             pstmt.setInt(2, answer.getQuizId());
             pstmt.setInt(3, answer.getAnswer());
             pstmt.executeUpdate();
-            pstmt.close();
 
-            // Truy vấn updatedAt mới nhất cho cặp userId, quizId
-            String selectSql = "SELECT updatedAt FROM ANSWER WHERE userId = ? AND quizId = ? ORDER BY updatedAt DESC";
-            PreparedStatement selectStmt = conn.prepareStatement(selectSql);
-            selectStmt.setInt(1, answer.getUserId());
-            selectStmt.setInt(2, answer.getQuizId());
-            ResultSet rs = selectStmt.executeQuery();
-
-            if (rs.next()) {
-                answer.setUpdatedAt(rs.getString("updatedAt"));
+            // Lấy createdAt và updatedAt từ cơ sở dữ liệu
+            String selectSql = "SELECT createdAt, updatedAt FROM ANSWERS WHERE userId = ? AND quizId = ?";
+            PreparedStatement selectPstmt = conn.prepareStatement(selectSql);
+            selectPstmt.setInt(1, answer.getUserId());
+            selectPstmt.setInt(2, answer.getQuizId());
+            ResultSet result = selectPstmt.executeQuery();
+            if (result.next()) {
+                answer.setCreatedAt(result.getTimestamp("createdAt"));
+                answer.setUpdatedAt(result.getTimestamp("updatedAt"));
             }
 
-            rs.close();
-            selectStmt.close();
+            result.close();
+            selectPstmt.close();
+            pstmt.close();
             conn.close();
 
         } catch (Exception e) {

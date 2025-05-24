@@ -1,7 +1,7 @@
 package Service;
 
 import Config.DBConnection;
-import Model.STUDIED;
+import Model.STUDIES;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,20 +12,20 @@ import java.util.Map;
 
 public class STUDIED_Service {
 
-    public List<STUDIED> getAllStudiedRecords() {
-        List<STUDIED> studiedList = new ArrayList<>();
+    public List<STUDIES> getAllStudiedRecords() {
+        List<STUDIES> studiedList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM STUDIED";
+            String sql = "SELECT * FROM STUDIES";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet result = pstmt.executeQuery();
 
             while (result.next()) {
-                STUDIED studied = new STUDIED();
+                STUDIES studied = new STUDIES();
                 studied.setUserId(result.getInt("userId"));
                 studied.setLessonId(result.getInt("lessonId"));
-                studied.setStudiedDate(result.getTimestamp("studiedDate"));
-                studied.setCompleted(result.getDouble("isCompleted"));
+                studied.setCreatedAt(result.getTimestamp("createdAt"));
+                studied.setUpdatedAt(result.getTimestamp("updatedAt"));
                 studiedList.add(studied);
             }
 
@@ -39,11 +39,11 @@ public class STUDIED_Service {
         }
     }
 
-    public STUDIED getStudiedRecordById(int id) {
-        STUDIED studied = new STUDIED();
+    public STUDIES getStudiedRecordById(int id) {
+        STUDIES studied = new STUDIES();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM STUDIED WHERE id = ?";
+            String sql = "SELECT * FROM STUDIES WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
             ResultSet result = pstmt.executeQuery();
@@ -51,8 +51,8 @@ public class STUDIED_Service {
             if (result.next()) {
                 studied.setUserId(result.getInt("userId"));
                 studied.setLessonId(result.getInt("lessonId"));
-                studied.setStudiedDate(result.getTimestamp("studiedDate"));
-                studied.setCompleted(result.getDouble("isCompleted"));
+                studied.setCreatedAt(result.getTimestamp("createdAt"));
+                studied.setUpdatedAt(result.getTimestamp("updatedAt"));
             }
 
             result.close();
@@ -65,11 +65,11 @@ public class STUDIED_Service {
         }
     }
 
-    public STUDIED getStudiedByLessonId(int lessonId) {
-        STUDIED studied = null;
+    public STUDIES getStudiedByLessonId(int lessonId) {
+        STUDIES studied = null;
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM STUDIED WHERE lessonId = ?";
+            String sql = "SELECT * FROM STUDIES WHERE lessonId = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, lessonId);
             ResultSet result = pstmt.executeQuery();
@@ -77,8 +77,8 @@ public class STUDIED_Service {
             if (result.next()) {
                 studied.setUserId(result.getInt("userId"));
                 studied.setLessonId(result.getInt("lessonId"));
-                studied.setStudiedDate(result.getTimestamp("studiedDate"));
-                studied.setCompleted(result.getDouble("isCompleted"));
+                studied.setCreatedAt(result.getTimestamp("createdAt"));
+                studied.setUpdatedAt(result.getTimestamp("updatedAt"));
             }
 
             result.close();
@@ -91,16 +91,26 @@ public class STUDIED_Service {
         }
     }
 
-    public void createStudiedRecord(STUDIED studied) {
+    public void createStudiedRecord(STUDIES studied) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO STUDIED (userId, lessonId, studiedDate, isCompleted) VALUES (?, ?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            String sql = "INSERT INTO STUDIES (userId, lessonId, createdAt, updatedAt) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, studied.getUserId());
             pstmt.setInt(2, studied.getLessonId());
-            pstmt.setTimestamp(3, studied.getStudiedDate());
-            pstmt.setDouble(4, studied.getIsCompleted());
+            pstmt.setTimestamp(3, studied.getCreatedAt());
+            pstmt.setTimestamp(4, studied.getUpdatedAt());
             pstmt.executeUpdate();
+
+            String selectSql = "SELECT createdAt, updatedAt FROM STUDIES WHERE userId = ? AND lessonId = ?";
+            PreparedStatement selectPstmt = conn.prepareStatement(selectSql);
+            selectPstmt.setInt(1, studied.getUserId());
+            selectPstmt.setInt(2, studied.getLessonId());
+            ResultSet result = selectPstmt.executeQuery();
+            if (result.next()) {
+                studied.setCreatedAt(result.getTimestamp("createdAt"));
+                studied.setUpdatedAt(result.getTimestamp("updatedAt"));
+            }
 
             pstmt.close();
             conn.close();
@@ -110,15 +120,15 @@ public class STUDIED_Service {
         }
     }
 
-    public void updateStudiedRecord(STUDIED studied) {
+    public void updateStudiedRecord(STUDIES studied) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE STUDIED SET userId = ?, lessonId = ?, studiedDate = ?, isCompleted = ? WHERE id = ?";
+            String sql = "UPDATE STUDIES SET userId = ?, lessonId = ?, createdAt = ?, updatedAt = ? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, studied.getUserId());
             pstmt.setInt(2, studied.getLessonId());
-            pstmt.setTimestamp(3, studied.getStudiedDate());
-            pstmt.setDouble(4, studied.getIsCompleted());
+            pstmt.setTimestamp(3, studied.getCreatedAt());
+            pstmt.setTimestamp(4, studied.getUpdatedAt());
             pstmt.executeUpdate();
 
             pstmt.close();
@@ -132,7 +142,7 @@ public class STUDIED_Service {
     public void deleteStudiedRecord(int id) {
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "DELETE FROM STUDIED WHERE id = ?";
+            String sql = "DELETE FROM STUDIES WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
@@ -149,7 +159,7 @@ public class STUDIED_Service {
         List<Map<String, Object>> progressList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT lessonId, studiedDate, isCompleted FROM STUDIED WHERE userId = ?";
+            String sql = "SELECT lessonId, createdAt, updatedAt FROM STUDIES WHERE userId = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, userId);
             ResultSet rs = pstmt.executeQuery();  
@@ -157,8 +167,8 @@ public class STUDIED_Service {
             while (rs.next()) {
                 Map<String, Object> progress = new LinkedHashMap<>();
                 progress.put("lessonId", rs.getInt("lessonId"));
-                progress.put("studiedDate", rs.getTimestamp("studiedDate"));
-                progress.put("isCompleted", rs.getDouble("isCompleted"));
+                progress.put("createdAt", rs.getTimestamp("createdAt"));
+                progress.put("updatedAt", rs.getTimestamp("updatedAt"));
                 progress.put("status", rs.getDouble("isCompleted") == 1.0 ? "1" : "undefined");
 
                 progressList.add(progress);

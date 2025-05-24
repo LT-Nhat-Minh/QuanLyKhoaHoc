@@ -65,6 +65,35 @@ public class COURSES_Service {
         }
     }
 
+    public List<COURSES> getCoursesByUserId(int userId) {
+        List<COURSES> coursesByUserIdList = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM COURSES WHERE id IN (SELECT courseID FROM ENROLLMENTS WHERE userID = ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, userId);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                COURSES course = new COURSES();
+                course.setID(result.getInt("id"));
+                course.setTitle(result.getString("title"));
+                course.setDescription(result.getString("description"));
+                course.setPrice(result.getDouble("price"));
+                course.setCreatedUserByID(result.getInt("createdByUserID"));
+                coursesByUserIdList.add(course);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return coursesByUserIdList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
     public void createCourse(COURSES course) {
         try {
             Connection conn = DBConnection.getConnection();

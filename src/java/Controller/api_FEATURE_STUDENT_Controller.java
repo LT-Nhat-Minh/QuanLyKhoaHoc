@@ -8,10 +8,11 @@ import Model.COURSES;
 import Model.ENROLLMENTS;
 import Model.LESSONS;
 import Model.QUIZZES;
-import Model.STUDIED;
-import Service.ANSWER_Service;
+import Model.STUDIES;
+import Service.ANSWERS_Service;
 import Service.COURSES_Service;
 import Service.ENROLLMENTS_Service;
+import Service.Features.STUDENT_Service;
 import Service.LESSONS_Service;
 import Service.QUIZZES_Service;
 import Service.STUDIED_Service;
@@ -56,58 +57,156 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
 
                 if (path.equals("/courses")) {
                     if (request.getParameter("id") != null) {
-                        // Get course by ID
-                        int id = Integer.parseInt(request.getParameter("id"));
-
+                        // get course of the users by courseID
+                        int courseID = Integer.parseInt(request.getParameter("id"));
                         COURSES_Service courseService = new COURSES_Service();
-                        COURSES course = courseService.getCourseById(id);
-                        
+                        COURSES course = courseService.getCourseById(courseID);
+
+                        // check if the user is enrolled in the course
                         ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                        ENROLLMENTS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(userID, id);
-
-                        // Check if the user is enrolled in the course
-                        if (enrollment == null) {
-                            throw new Exception("User is not enrolled in this course");
+                        ENROLLMENTS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(userID, courseID);
+                        if (enrollment != null) {
+                            List<Map<String, Object>> filteredCourses = new STUDENT_Service().filteredCoursesByLessons(List.of(course), userID);
+                            if (filteredCourses.isEmpty()) {
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                                response.getWriter().write("{\"message\": \"No lessons found in this course for the user.\"}");
+                            } else {
+                                response.setStatus(HttpServletResponse.SC_OK);
+                                response.getWriter().write(new Gson().toJson(filteredCourses));
+                            }
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("{\"message\": \"User still not enroll this course.\"}");
                         }
-
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write(new Gson().toJson(course));
                     } else {
-                        // Get all courses
+                        // Get all courses with filtering userID on ENROLLMENTS
                         COURSES_Service courseService = new COURSES_Service();
-                        List<COURSES> courseList = courseService.getAllCourses();
-                        List<COURSES> resultList = new ArrayList<>();
+                        List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
-                        for(COURSES course : courseList){
-                            ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                            ENROLLMENTS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(userID, course.getID());
-                            if(enrollment != null){
-                                resultList.add(course);
+                        if (courseList.isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            response.getWriter().write("{\"message\": \"No courses found for the user.\"}");
+                        } else {
+                            List<Map<String, Object>> filteredCourses = new STUDENT_Service().filteredCoursesByLessons(courseList, userID);
+                            if (filteredCourses.isEmpty()) {
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                                response.getWriter().write("{\"message\": \"No lessons found in the courses for the user.\"}");
+                            } else {
+                                response.setStatus(HttpServletResponse.SC_OK);
+                                response.getWriter().write(new Gson().toJson(filteredCourses));
                             }
                         }
 
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write(new Gson().toJson(resultList));
                     }
 
                 } else if (path.equals("/lessons")) {
                     if (request.getParameter("courseID") != null) {
+                        // Get all LESSONS of the user by courseID
+                        // USERID -> COURSES_LIST -> LESSONS_LIST
+                        // Get all courses the user is enrolled in
                         int courseID = Integer.parseInt(request.getParameter("courseID"));
-                        LESSONS_Service lessonService = new LESSONS_Service();
-                        List<LESSONS> lessons = lessonService.getLessonByCourseID(courseID);
+                        COURSES_Service courseService = new COURSES_Service();
+                        List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write(new Gson().toJson(lessons));
+                        // Filter courses by courseID
+                        courseList.removeIf(course -> course.getID() != courseID);
+
+                        if (courseList.isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            response.getWriter().write("{\"message\": \"No courses found for the user.\"}");
+                        } else {
+                            // Get all lessons from the enrollments
+                            LESSONS_Service lessonService = new LESSONS_Service();
+                            List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
+
+                            // Filter lessons based on uses's quiz answers
+                            List<Map<String, Object>> filteredLessons = new STUDENT_Service().filteredLessonsByQuizzesAnswer(lessonList, userID);
+
+                            if( filteredLessons.isEmpty()) {
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                                response.getWriter().write("{\"message\": \"No lessons found in this course for the user.\"}");
+                            } else {
+                                response.setStatus(HttpServletResponse.SC_OK);
+                                response.getWriter().write(new Gson().toJson(filteredLessons));
+                            }
+                        } 
+                    } else {
+                        // Get all lessons of the user
+                        // USERID -> COURSES_LIST -> LESSONS_LIST
+                        // Get all courses the user is enrolled in
+                        COURSES_Service courseService = new COURSES_Service();
+                        List<COURSES> courseList = courseService.getCoursesByUserId(userID);
+
+                        // Get all lessons from the enrollments
+                        LESSONS_Service lessonService = new LESSONS_Service();
+                        List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
+
+                        // Filter lessons based on user's quiz answers
+                        List<Map<String, Object>> filteredLessons = new STUDENT_Service().filteredLessonsByQuizzesAnswer(lessonList, userID);
+
+                        if (filteredLessons.isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            response.getWriter().write("{\"message\": \"No lessons found for the user.\"}");
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write(new Gson().toJson(filteredLessons));
+                        }
                     }
                 } else if (path.equals("/quizzes")) {
                     if (request.getParameter("lessonID") != null) {
-                        // Get all quizzes
+                        // Get all QUIZZES of the user by lessonID
+                        // USERID -> COURSES_LIST -> LESSONS_LIST -> QUIZZES_LIST
+                        // Get all courses the user is enrolled in
                         int lessonID = Integer.parseInt(request.getParameter("lessonID"));
-                        QUIZZES_Service quizService = new QUIZZES_Service();
-                        List<QUIZZES> quiz = quizService.getQuizByLessonID(lessonID);
+                        COURSES_Service courseService = new COURSES_Service();
+                        List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write(new Gson().toJson(quiz));
+                        // Get all lessons from the enrollments
+                        LESSONS_Service lessonService = new LESSONS_Service();
+                        List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
+
+                        // Filter lessons by lessonID
+                        lessonList.removeIf(lesson -> lesson.getID() != lessonID);
+
+                        // Get all quizzes from the lessons
+                        QUIZZES_Service quizService = new QUIZZES_Service();
+                        List<QUIZZES> quizList = quizService.getQuizByLessonsList(lessonList);
+
+                        // Filter quizzes based on user answers
+                        List<Map<String, Object>> filteredQuizzes = new STUDENT_Service().filteredQuizzesByAnswer(quizList, userID);
+                        
+                        if( filteredQuizzes.isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            response.getWriter().write("{\"message\": \"No quizzes found in this lesson for the user.\"}");
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write(new Gson().toJson(filteredQuizzes));
+                        }
+                    } else {
+                        // Get all QUIZZES of the user
+                        // USERID -> COURSES_LIST -> LESSONS_LIST -> QUIZZES_LIST
+                        // Get all courses the user is enrolled in
+                        COURSES_Service courseService = new COURSES_Service();
+                        List<COURSES> courseList = courseService.getCoursesByUserId(userID);
+
+                        // Get all lessons from the enrollments
+                        LESSONS_Service lessonService = new LESSONS_Service();
+                        List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
+
+                        // Get all quizzes from the lessons
+                        QUIZZES_Service quizService = new QUIZZES_Service();
+                        List<QUIZZES> quizList = quizService.getQuizByLessonsList(lessonList);
+
+                        // Filter quizzes based on user answers
+                        List<Map<String, Object>> filteredQuizzes = new STUDENT_Service().filteredQuizzesByAnswer(quizList, userID);
+
+                        if (filteredQuizzes.isEmpty()) {
+                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            response.getWriter().write("{\"message\": \"No quizzes found for the user.\"}");
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write(new Gson().toJson(filteredQuizzes));
+                        }
                     }
                 } else if (path.equals("/quizzesWithScore")) {
                     String lessonParam = request.getParameter("lessonID");
@@ -115,7 +214,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                     if (lessonParam != null) {
                         // Case with lessonID: return quiz results
                         int lessonID = Integer.parseInt(lessonParam);
-                        ANSWER_Service answerService = new ANSWER_Service();
+                        ANSWERS_Service answerService = new ANSWERS_Service();
                         Map<String, Object> scoreData = answerService.getStudentLessonScores(lessonID);
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().write(new Gson().toJson(scoreData));
@@ -223,114 +322,58 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        try {
-            String doPath = request.getPathInfo();
-            if(doPath.equals("/enrollments")){
-                int userId = Integer.parseInt(request.getParameter("userId"));
-                int courseId = Integer.parseInt(request.getParameter("courseId"));
+        if (jwt.validateToken(request)) {
+            try {
+                int userID = (int) request.getAttribute("id");
+                String doPath = request.getPathInfo();
+                if (doPath.equals("/enrollments")) {
+                    int courseID = Integer.parseInt(request.getParameter("courseID"));
                     // Validate input
-                    if (userId <= 0 || courseId <= 0) {
-                        throw new Exception("Missing or invalid userId or courseId");
+                    if (userID <= 0 || courseID <= 0) {
+                        throw new Exception("Missing or invalid userId or courseID");
                     }
 
                     ENROLLMENTS enrollment = new ENROLLMENTS();
-                    enrollment.setUserId(userId);
-                    enrollment.setCourseId(courseId);
+                    enrollment.setUserId(userID);
+                    enrollment.setCourseId(courseID);
                     ENROLLMENTS_Service service = new ENROLLMENTS_Service();
                     service.createEnrollment(enrollment);
 
-                    // Trả về kết quả
+                    // Return result
                     response.setStatus(HttpServletResponse.SC_CREATED);
                     response.getWriter().write(new Gson().toJson(enrollment));
-                
-            }
-            else if(doPath.equals("/answers")){
-                int userId = Integer.parseInt(request.getParameter("userId"));
-                int quizId = Integer.parseInt(request.getParameter("quizId"));
-                int answerValue = Integer.parseInt(request.getParameter("answer"));
-                
 
-                if (userId <= 0 || quizId <= 0 || answerValue >= 5 || answerValue <= 0) {
-                    throw new Exception("Missing or invalid userId, quizId or answer");
-                }
+                } else if (doPath.equals("/answers")) {
+                    int quizID = Integer.parseInt(request.getParameter("quizID"));
+                    int answerValue = Integer.parseInt(request.getParameter("answer"));
 
-                ANSWERS newAnswer = new ANSWERS();
-                newAnswer.setUserId(userId);
-                newAnswer.setQuizId(quizId);
-                newAnswer.setAnswer(answerValue);
-                
-               
-                ANSWER_Service answerService = new ANSWER_Service();
-                answerService.createAnswer(newAnswer);
-                
-                QUIZZES_Service quizS = new QUIZZES_Service();
-                QUIZZES quizObj = quizS.getQuizById(newAnswer.getQuizId());
-                
-                List<QUIZZES> quizList = quizS.getQuizByLessonID(quizObj.getLessonID());
-                
-                boolean isLessonCompleted = true;
-                for(QUIZZES q : quizList ){
-                    if (answerService.getAnswerByQuizId(q.getID()) == null ) {
-                        isLessonCompleted = false;
-                        break;
+                    if (userID <= 0 || quizID <= 0 || answerValue >= 5 || answerValue <= 0) {
+                        throw new Exception("Missing or invalid userId, quizID or answer");
                     }
-                }
-                
-                if(!isLessonCompleted){
+
+                    ANSWERS newAnswer = new ANSWERS();
+                    newAnswer.setUserId(userID);
+                    newAnswer.setQuizId(quizID);
+                    newAnswer.setAnswer(answerValue);
+
+                    ANSWERS_Service answerService = new ANSWERS_Service();
+                    answerService.createAnswer(newAnswer);
+
                     response.setStatus(HttpServletResponse.SC_CREATED);
                     response.getWriter().write(new Gson().toJson(newAnswer));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"error\":\"Unknown endpoint: " + doPath + "\"}");
                 }
-                
-                else{
-                    STUDIED_Service stuS = new STUDIED_Service();
-                    
-                    LESSONS_Service lessonS = new LESSONS_Service();
-                    LESSONS lessonObj = lessonS.getLessonById(quizObj.getLessonID());
-                    
-                    List<LESSONS> lessonList = lessonS.getLessonByCourseID(lessonObj.getCourseID());
-                    boolean isCourseCompleted = true;
-                    for(LESSONS i : lessonList ){
-                        STUDIED studiedObj = stuS.getStudiedByLessonId(i.getID());
-                        
-                        if (studiedObj.getIsCompleted() != 1 ) {
-                            isCourseCompleted = false;
-                            break;
-                        }
-                    }
-
-                    if(!isCourseCompleted){
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-                        response.getWriter().write(new Gson().toJson(newAnswer));
-                    }
-                    else{
-                        
-                        ENROLLMENTS_Service enrollS = new ENROLLMENTS_Service();
-                        ENROLLMENTS enrollObj = enrollS.getEnrollmentByUserIdAndCourseId(userId, lessonObj.getCourseID());
-                        
-                        enrollObj.setStatusID(2);
-                        
-                        enrollS.updateEnrollment(enrollObj);
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-                        response.getWriter().write(new Gson().toJson(newAnswer));
-                        
-                    }
-                    
-                    
-                }
-                
-                
-               
-                // Trả về toàn bộ đối tượng answer đã tạo
-               
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"Invalid token\"}");
         }
-            
-            
-            
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-        }
-}
+    }
     
     
    @Override
