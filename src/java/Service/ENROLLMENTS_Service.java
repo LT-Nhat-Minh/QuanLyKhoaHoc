@@ -109,12 +109,11 @@ public class ENROLLMENTS_Service {
 
     public void updateEnrollment(ENROLLMENTS enrollment) {
     try (Connection conn = DBConnection.getConnection()) {
-        String sql = "UPDATE ENROLLMENTS SET feedbackEnrollment = ?, updatedAt = ? WHERE userId = ? AND courseId = ?";
+        String sql = "UPDATE ENROLLMENTS SET feedbackEnrollment = ? WHERE userId = ? AND courseId = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, enrollment.getFeedbackEnrollment());
-        pstmt.setTimestamp(2, enrollment.getUpdatedAt());
-        pstmt.setInt(3, enrollment.getUserId());
-        pstmt.setInt(4, enrollment.getCourseId());
+        pstmt.setInt(2, enrollment.getUserId());
+        pstmt.setInt(3, enrollment.getCourseId());
         pstmt.executeUpdate();
     } catch (Exception e) {
         throw new RuntimeException("Error: " + e.getMessage());

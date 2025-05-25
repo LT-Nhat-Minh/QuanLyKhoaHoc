@@ -168,7 +168,7 @@ public class QUIZZES_Service {
     public void updateQuiz(QUIZZES quiz) {  
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE QUIZZES SET getLessonID = ?, title = ?, question = ?, correctAnswer=? WHERE id = ?";
+            String sql = "UPDATE QUIZZES SET LessonId = ?, title = ?, question = ?, correctAnswer=? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, quiz.getTitle());
             pstmt.setString(2, quiz.getQuestion());
