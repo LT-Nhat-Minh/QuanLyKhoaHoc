@@ -65,6 +65,35 @@ public class COURSES_Service {
         }
     }
 
+    public List<COURSES> getCoursesByCreatedByUserID(int createdByUserId) {
+        List<COURSES> coursesByCreatedByUserIdList = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM COURSES WHERE createdByUserID = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, createdByUserId);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                COURSES course = new COURSES();
+                course.setID(result.getInt("id"));
+                course.setTitle(result.getString("title"));
+                course.setDescription(result.getString("description"));
+                course.setPrice(result.getDouble("price"));
+                course.setCreatedUserByID(result.getInt("createdByUserID"));
+                coursesByCreatedByUserIdList.add(course);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return coursesByCreatedByUserIdList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
     public List<COURSES> getCoursesByUserId(int userId) {
         List<COURSES> coursesByUserIdList = new ArrayList<>();
         try {
@@ -102,7 +131,7 @@ public class COURSES_Service {
             pstmt.setString(1, course.getTitle());
             pstmt.setString(2, course.getDescription());
             pstmt.setDouble(3, course.getPrice());
-            pstmt.setInt(4, course.getCreatedUserByID());
+            pstmt.setInt(4, course.getCreatedByUserID());
             pstmt.executeUpdate();
 
             ResultSet generatedKeys = pstmt.getGeneratedKeys();
@@ -127,7 +156,7 @@ public class COURSES_Service {
             pstmt.setString(1, course.getTitle());
             pstmt.setString(2, course.getDescription());
             pstmt.setDouble(3, course.getPrice());
-            pstmt.setInt(4, course.getCreatedUserByID());
+            pstmt.setInt(4, course.getCreatedByUserID());
             pstmt.setInt(5, course.getID());
             pstmt.executeUpdate();
             

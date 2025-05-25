@@ -55,7 +55,7 @@ public class api_COURSES_Controller extends HttpServlet {
             int createdByUserID = Integer.parseInt(request.getParameter("createdByUserID"));
 
             // Validate input
-            if (title == null || description == null || price <= 0 ) {
+            if (title == null || description == null || price <= 0) {
                 throw new Exception("Missing required fields");
             }
 
@@ -63,6 +63,12 @@ public class api_COURSES_Controller extends HttpServlet {
             COURSES course = new COURSES(title, description, price, createdByUserID);
             COURSES_Service courseService = new COURSES_Service();
             courseService.createCourse(course);
+
+            //Kiểm tra xem lesson đã đủ quizzi có câu trả lời hay chưa
+            //Nếu đủ rồi thì cập nhật bảng STUDIED trạng thái là đã hoàn thành LESSON
+
+            //Kiểm tra xem course đã đủ lesson mà học sinh đã hoàn thành hay chưa
+            //Nếu đủ rồi thì cập nhật bảng ENROLLMEN trạng thái là đã hoàn thành COURSE
 
             response.setStatus(HttpServletResponse.SC_CREATED);
             response.getWriter().write(new Gson().toJson(course));
@@ -86,16 +92,15 @@ public class api_COURSES_Controller extends HttpServlet {
         String title = params.get("title");
         String description = params.get("description");
         double price = Double.parseDouble(params.get("price"));
-        int createdByUserID = Integer.parseInt(params.get("createdByUserID"));
 
         // Validate data
-        if (title == null || description == null || price <= 0 ) {
+        if (title == null || description == null || price <= 0) {
             throw new Exception("Missing required fields");
         }
 
         // Update course
         if (id > 0) {
-            COURSES course = new COURSES(id, title, description, price, createdByUserID);
+            COURSES course = new COURSES(id, title, description, price);
             COURSES_Service courseService = new COURSES_Service();
             courseService.updateCourse(course);
 

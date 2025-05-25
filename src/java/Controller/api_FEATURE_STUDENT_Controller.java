@@ -347,8 +347,32 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                     int quizID = Integer.parseInt(request.getParameter("quizID"));
                     int answerValue = Integer.parseInt(request.getParameter("answer"));
 
+                    
+                    // Validate input
                     if (userID <= 0 || quizID <= 0 || answerValue >= 5 || answerValue <= 0) {
                         throw new Exception("Missing or invalid userId, quizID or answer");
+                    }
+
+                    // check if the quiz exists
+                    QUIZZES_Service quizService = new QUIZZES_Service();
+                    QUIZZES quiz = quizService.getQuizById(quizID);
+                    if (quiz == null) {
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.getWriter().write("{\"error\":\"Quiz not found\"}");
+                        return;
+                    }
+
+                    // check if the user are in the course of the lesson of the quiz
+                    LESSONS_Service lessonService = new LESSONS_Service();
+                    LESSONS lesson = lessonService.getLessonById(quiz.getLessonID());
+                    COURSES_Service courseService = new COURSES_Service();
+                    COURSES course = courseService.getCourseById(lesson.getCourseID());
+                    ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
+                    ENROLLMENTS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(userID, course.getID());
+                    if (enrollment == null) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.getWriter().write("{\"error\":\"User is not in the course of this quiz\"}");
+                        return;
                     }
 
                     ANSWERS newAnswer = new ANSWERS();

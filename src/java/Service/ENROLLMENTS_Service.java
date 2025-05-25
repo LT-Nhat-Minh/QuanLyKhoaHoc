@@ -38,6 +38,35 @@ public class ENROLLMENTS_Service {
         }
     }
 
+    public List<ENROLLMENTS> getEnrollmentsByCourseId(int courseId) {
+        List<ENROLLMENTS> enrollmentList = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM ENROLLMENTS WHERE courseId = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, courseId);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                ENROLLMENTS enrollment = new ENROLLMENTS();
+                enrollment.setUserId(result.getInt("userId"));
+                enrollment.setCourseId(result.getInt("courseId"));
+                enrollment.setCreatedAt(result.getTimestamp("createdAt"));
+                enrollment.setUpdatedAt(result.getTimestamp("updatedAt"));
+                enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
+                enrollmentList.add(enrollment);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return enrollmentList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
     public ENROLLMENTS getEnrollmentById(int id) {
         ENROLLMENTS enrollment = new ENROLLMENTS();
         try {

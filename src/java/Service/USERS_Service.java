@@ -46,6 +46,35 @@ public class USERS_Service {
         }
     }
 
+    public List<USERS> getUsersByRoleID(int roleID) {
+        List<USERS> userList = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM USERS WHERE roleID = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, roleID);
+            ResultSet result = pstmt.executeQuery();
+
+            while (result.next()) {
+                USERS user = new USERS();
+                user.setID(result.getInt("id"));
+                user.setUserName(result.getString("userName"));
+                user.setPassword(result.getString("password"));
+                user.setEmail(result.getString("email"));
+                user.setRoleID(result.getInt("roleID"));
+                userList.add(user);
+            }
+
+            result.close();
+            pstmt.close();
+            conn.close();
+
+            return userList;
+        } catch (Exception e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
     public USERS getUserById(int id) {
         USERS user = new USERS();
         try{

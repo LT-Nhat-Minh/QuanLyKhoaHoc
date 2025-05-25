@@ -47,11 +47,12 @@ public class auth_Service {
         PreparedStatement pstmt = null;
         try{
             Connection conn = DBConnection.getConnection();
-            String sql = "INSERT INTO USERS (userName, email, password) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO USERS (userName, email, password, RoleId) VALUES (?, ?, ?, ?)";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, userName);
             pstmt.setString(2, email);
             pstmt.setString(3, password);
+            pstmt.setInt(4, 1); // Default role ID for user is 1
             int rowsAffected = pstmt.executeUpdate();
 
             //check if user is created
@@ -66,7 +67,7 @@ public class auth_Service {
                     user.setUserName(result.getString("userName"));
                     user.setEmail(result.getString("email"));
                     user.setPassword(result.getString("password"));
-                    user.setRoleID(result.getInt("roleID"));
+                    user.setRoleID(result.getInt("RoleId"));
                     
                     return user;
                 } else {
