@@ -329,8 +329,8 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                 if (doPath.equals("/enrollments")) {
                     int courseID = Integer.parseInt(request.getParameter("courseID"));
                     // Validate input
-                    if (userID <= 0 || courseID <= 0) {
-                        throw new Exception("Missing or invalid userId or courseID");
+                    if (courseID <= 0) {
+                        throw new Exception("Missing or invalid courseID");
                     }
 
                     ENROLLMENTS enrollment = new ENROLLMENTS();
@@ -405,47 +405,48 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
     throws ServletException, IOException {
 
     response.setContentType("application/json;charset=UTF-8");
-
-    try {
+     if (jwt.validateToken(request)) {
+        try {
+                int userID = (int) request.getAttribute("id");
+    
         // Parse dữ liệu từ request body (x-www-form-urlencoded)
-        Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+            Map<String, String> params = parseForm.parseFormUrlEncoded(request);
 
-        int userId = Integer.parseInt(params.get("userId"));
-        int courseId = Integer.parseInt(params.get("courseId"));
-        String feedback = params.get("feedbackEnrollment");
+            int courseId = Integer.parseInt(params.get("courseId"));
+            String feedback = params.get("feedbackEnrollment");
 
-        // Validate input
-        if (userId <= 0 || courseId <= 0) {
+            // Validate input
+            if (courseId <= 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Invalid userId, courseId\"}");
+                return;
+            }
+
+            // Tạo đối tượng enrollment với thông tin cập nhật
+            ENROLLMENTS enrollment = new ENROLLMENTS();
+            enrollment.setUserId(userID);
+            enrollment.setCourseId(courseId);
+            enrollment.setFeedbackEnrollment(feedback);
+
+            // Gọi service để cập nhật
+            ENROLLMENTS_Service service = new ENROLLMENTS_Service();
+            service.updateEnrollment(enrollment);
+
+            // Giả sử bạn có hàm getEnrollmentById để lấy lại bản ghi đã cập nhật
+            ENROLLMENTS updated = service.getEnrollmentByUserIdAndCourseId(userID, courseId);
+
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(new Gson().toJson(updated));
+
+
+        } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Invalid userId, courseId\"}");
-            return;
-        }
-
-        // Tạo đối tượng enrollment với thông tin cập nhật
-        ENROLLMENTS enrollment = new ENROLLMENTS();
-        enrollment.setUserId(userId);
-        enrollment.setCourseId(courseId);
-        enrollment.setFeedbackEnrollment(feedback);
-
-        // Gọi service để cập nhật
-        ENROLLMENTS_Service service = new ENROLLMENTS_Service();
-        service.updateEnrollment(enrollment);
-
-        // Giả sử bạn có hàm getEnrollmentById để lấy lại bản ghi đã cập nhật
-        ENROLLMENTS updated = service.getEnrollmentByUserIdAndCourseId(userId, courseId);
-
-      
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write(new Gson().toJson(updated));
-        
-
-    } catch (NumberFormatException e) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write("{\"error\":\"Invalid number format\"}");
-    } catch (Exception e) {
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-    }
+            response.getWriter().write("{\"error\":\"Invalid number format\"}");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        }}
 }
 
 
