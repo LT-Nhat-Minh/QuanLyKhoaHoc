@@ -38,7 +38,6 @@ public class api_TEACHER_Controller extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        System.out.println("api_TEACHER_Controller: doGet");
         if(jwt.validateToken(request)) {
             int teacherID = (int) request.getAttribute("id");
             int userRoleID = (int) request.getAttribute("roleID");

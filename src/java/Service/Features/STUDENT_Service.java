@@ -41,13 +41,12 @@ public class STUDENT_Service {
                 Map<String, Object> quizData = Map.of(
                     "quiz", quiz,
                     "answer", "null",
-                     "score", "null"
+                    "score", score
                 );
                 filteredQuizzes.add(quizData);
             }
         }
         return filteredQuizzes;
-        
     }
 
     public List<Map<String, Object>> filteredLessonsByQuizzesAnswer(List<LESSONS> lessonList, int studentID) {
@@ -74,7 +73,7 @@ public class STUDENT_Service {
                     if (userAnswer == quiz.getCorrectAnswer()) {
                         correctCount++;
                     }
-    }
+                }
             }
             double score = quizList.isEmpty() ? 0.0 : ((double)(correctCount * 10) / (quizList.size()));
             score = Math.round((score * 100) / 100); // làm tròn 2 chữ số thập phân
@@ -89,12 +88,12 @@ public class STUDENT_Service {
                 Map<String, Object> lessonData = Map.of(
                     "lesson", lesson,
                     "status", "not completed",
-                    "score", "null"
-
+                    "score", score
                 );
                 filteredLessons.add(lessonData);
             }
         }
+        
         return filteredLessons;
     }
 
@@ -114,10 +113,11 @@ public class STUDENT_Service {
             for (Map<String, Object> lessonData : filteredLessons) {
                 if ("not completed".equals(lessonData.get("status"))) {
                     hasCompletedLesson = false;
-                    break;
                 }
-               totalLessonScore += (double) lessonData.get("score"); 
+                totalLessonScore += (double) lessonData.get("score");
             }
+
+            System.out.println("Total lesson score: " + totalLessonScore);
              double score = lessonList.isEmpty() ? 0.0 : (totalLessonScore / lessonList.size());
              score = Math.round(score * 100.0) / 100.0; // làm tròn 2 chữ số
             if (hasCompletedLesson) {
@@ -132,7 +132,7 @@ public class STUDENT_Service {
                 Map<String, Object> courseData = Map.of(
                     "course", course,
                     "status", "not completed",
-                    "score", "null"
+                    "score", score
                 );
                 filteredCourses.add(courseData);
             }

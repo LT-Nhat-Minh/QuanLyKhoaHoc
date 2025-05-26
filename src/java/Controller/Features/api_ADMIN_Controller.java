@@ -5,7 +5,11 @@ package Controller.Features;
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
+import Model.COURSES;
+import Model.ENROLLMENTS;
 import Model.USERS;
+import Service.COURSES_Service;
+import Service.ENROLLMENTS_Service;
 import Service.USERS_Service;
 import Utils.jwt;
 import com.google.gson.Gson;
@@ -16,7 +20,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -38,11 +45,44 @@ public class api_ADMIN_Controller extends HttpServlet {
                     response.getWriter().write("{\"message\": \"Admin access to users\"}");
                     break;
                 case "/teachers":
+                    List<Map<String, Object>> results = new ArrayList<>(); // results of the query
                     USERS_Service userService = new USERS_Service();
                     List<USERS> teachers = userService.getUsersByRoleID(2);
 
+                    // get all courses taught by these teachers
+                    COURSES_Service coursesService = new COURSES_Service();
+                    Map<USERS, List<COURSES>> courseListByTeacher = new HashMap<>();
+                    for (USERS teacher : teachers) {
+                        List<COURSES> courses = coursesService.getCoursesByCreatedByUserID(teacher.getID());
+                        courseListByTeacher.put(teacher, courses);
+                    }
+
+                    for(Map.Entry<USERS, List<COURSES>> entry : courseListByTeacher.entrySet()) {
+                        USERS teacher = entry.getKey();
+                        List<COURSES> courses = entry.getValue();
+                        List<Integer> studentIDList = new ArrayList<>();
+                        for( COURSES course : courses) {
+                            ENROLLMENTS_Service enrollmentsService = new ENROLLMENTS_Service();
+                            List<ENROLLMENTS> enrollList = enrollmentsService.getEnrollmentsByCourseId(course.getID());
+
+                            //check if the student is already in the list
+                            for (ENROLLMENTS i : enrollList) {
+                                if(!studentIDList.contains(i.getUserId())) {
+                                    studentIDList.add(i.getUserId());
+                                }
+                            }
+                        }
+
+                        results.add(Map.of(
+                            "teacherID", teacher.getID(),
+                            "students", studentIDList,
+                            "studentCount", studentIDList.size()
+                        ));
+                    }
+
+
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write(new Gson().toJson(teachers));
+                    response.getWriter().write(new Gson().toJson(results));
                     break;
                 case "/quizzes":
                     // Handle quiz-related admin actions
