@@ -46,142 +46,21 @@ public class api_TEACHER_Controller extends HttpServlet {
                 switch (path) {
                     case "/student":
                         if (request.getParameter("quizID") != null) {
-                            int quizID = Integer.parseInt(request.getParameter("quizID"));
-                            // Get all students who have taken the quiz
-                            // QUIZZES_ID -> LESSONS_ID -> COURSES_ID -> ENROLLMENTS -> STUDENTS -> QUIZZES
-                            QUIZZES_Service quizService = new QUIZZES_Service();
-                            QUIZZES quizObj = quizService.getQuizById(quizID);
-
-                            LESSONS_Service lessonService = new LESSONS_Service();
-                            LESSONS lessonObj = lessonService.getLessonById(quizObj.getLessonID());
-
-                            COURSES_Service courseService = new COURSES_Service();
-                            COURSES courseObj = courseService.getCourseById(lessonObj.getCourseID());
-
-                            // Filter courseList created by teacher
-                            if (courseObj.getCreatedByUserID() != teacherID) {
-                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                                response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
-                                return;
-                            }
-
-                            ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                            List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
-
-                            List<USERS> studentList = new ArrayList<>();
-                            for (ENROLLMENTS enrollment : enrollmentList) {
-                                // Get student details by ID
-                                USERS_Service userService = new USERS_Service();
-                                USERS student = userService.getUserById(enrollment.getUserId());
-
-                                // Add
-                                studentList.add(student);
-                            }
-
-                            List<Map<String, Object>> filteredQuizzesAllStudent = new ArrayList<>();
-
-                            for (USERS student : studentList) {
-                                TEACHER_Service teacherService = new TEACHER_Service();
-                                List<Map<String, Object>> filteredQuizzes = teacherService.filteredQuizzesByAnswer(List.of(quizObj), student.getID());
-
-                                for (Map<String, Object> i : filteredQuizzes) {
-                                    filteredQuizzesAllStudent.add(i);
-                                }
-                            }
-
-                            response.setStatus(HttpServletResponse.SC_OK);
-                            response.getWriter().write(new Gson().toJson(filteredQuizzesAllStudent));
+                            getTopStudentByQuizScore(request, response, teacherID);
+                            
                         } else if (request.getParameter("lessonID") != null) {
-                            int lessonID = Integer.parseInt(request.getParameter("lessonID"));
-                            // Get all students who have enrolled in the course of the lesson
-                            // LESSONS_ID -> COURSES_ID -> ENROLLMENTS -> STUDENTS -> LESSONS
-                            LESSONS_Service lessonService = new LESSONS_Service();
-                            LESSONS lessonObj = lessonService.getLessonById(lessonID);
+                            getTopStudentByLessonScore(request, response, teacherID);
 
-                            COURSES_Service courseService = new COURSES_Service();
-                            COURSES courseObj = courseService.getCourseById(lessonObj.getCourseID());
-
-                            // Filter courseList created by teacher
-                            if (courseObj.getCreatedByUserID() != teacherID) {
-                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                                response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
-                                return;
-                            }
-
-                            ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                            List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
-
-                            List<USERS> studentList = new ArrayList<>();
-                            for (ENROLLMENTS enrollment : enrollmentList) {
-                                // Get student details by ID
-                                USERS_Service userService = new USERS_Service();
-                                USERS student = userService.getUserById(enrollment.getUserId());
-
-                                // Add
-                                studentList.add(student);
-                            }
-
-                            List<Map<String, Object>> filteredLessonsAllStudent = new ArrayList<>();
-                            for (USERS student : studentList) {
-                                TEACHER_Service teacherService = new TEACHER_Service();
-                                List<Map<String, Object>> filteredLessons = teacherService.filteredLessonsByQuizzesAnswer(List.of(lessonObj), student.getID());
-
-                                for (Map<String, Object> i : filteredLessons) {
-                                    filteredLessonsAllStudent.add(i);
-                                }
-                            }
-
-                            response.setStatus(HttpServletResponse.SC_OK);
-                            response.getWriter().write(new Gson().toJson(filteredLessonsAllStudent));
                         } else if (request.getParameter("courseID") != null) {
-                            int courseID = Integer.parseInt(request.getParameter("courseID"));
-                            // Get all students who have enrolled in the course
-                            // COURSES_ID -> ENROLLMENTS -> STUDENTS -> COURSES
-                            COURSES_Service courseService = new COURSES_Service();
-                            COURSES courseObj = courseService.getCourseById(courseID);
-
-                            if (courseObj == null) {
-                                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                                response.getWriter().write("{\"message\": \"Course not found\"}");
-                                return;
-                            }
-
-                            // Filter courseList created by teacher
-                            if (courseObj.getCreatedByUserID() != teacherID) {
-                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                                response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
-                                return;
-                            }
-
-                            ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                            List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
-
-                            List<USERS> studentList = new ArrayList<>();
-                            for (ENROLLMENTS enrollment : enrollmentList) {
-                                // Get student details by ID
-                                USERS_Service userService = new USERS_Service();
-                                USERS student = userService.getUserById(enrollment.getUserId());
-
-                                // Add
-                                studentList.add(student);
-                            }
-
-                            List<Map<String, Object>> filteredCoursesAllStudent = new ArrayList<>();
-                            for (USERS student : studentList) {
-                                TEACHER_Service teacherService = new TEACHER_Service();
-                                List<Map<String, Object>> filteredCourses = teacherService.filteredCoursesByLessons(List.of(courseObj) ,student.getID());
-
-                                for (Map<String, Object> i : filteredCourses) {
-                                    filteredCoursesAllStudent.add(i);
-                                }
-                            }
-
-                            response.setStatus(HttpServletResponse.SC_OK);
-                            response.getWriter().write(new Gson().toJson(filteredCoursesAllStudent));
+                            getTopStudentByCourseScore(request, response, teacherID);
+                            
                         } else {
                             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                             response.getWriter().write("{\"error\":\"Missing required parameters\"}");
                         }
+                        break;
+                    case "/courses":
+                        getTopCourseByAvgStudentScore(request, response, teacherID);
                         break;
                     default:
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -314,5 +193,256 @@ public class api_TEACHER_Controller extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"message\": \"Invalid token\"}");
         }
+    }
+
+    private void getTopStudentByCourseScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        int courseID = Integer.parseInt(request.getParameter("courseID"));
+        // Get all students who have enrolled in the course
+        // COURSES_ID -> ENROLLMENTS -> STUDENTS -> COURSES
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(courseID);
+        if (courseObj == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"message\": \"Course not found\"}");
+            return;
+        }
+
+        // Filter courseList created by teacher
+        if (courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
+        List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
+        List<USERS> studentList = new ArrayList<>();
+        for (ENROLLMENTS enrollment : enrollmentList) {
+            // Get student details by ID
+            USERS_Service userService = new USERS_Service();
+            USERS student = userService.getUserById(enrollment.getUserId());
+            // Add
+            studentList.add(student);
+        }
+
+        List<Map<String, Object>> filteredCoursesAllStudent = new ArrayList<>();
+        for (USERS student : studentList) {
+            TEACHER_Service teacherService = new TEACHER_Service();
+            List<Map<String, Object>> filteredCourses = teacherService.filteredCoursesByLessons(List.of(courseObj) ,student.getID());
+            for (Map<String, Object> i : filteredCourses) {
+                filteredCoursesAllStudent.add(i);
+            }
+        }
+
+        if (request.getParameter("sort") != null) {
+            String sort = request.getParameter("sort");
+            if (sort.contains("score")) {
+                if (sort.contains("asc")) {
+                    filteredCoursesAllStudent.sort(
+                    (a, b) -> Double.compare((Double) a.get("score"), (Double) b.get("score"))
+                    );
+                } else if (sort.contains("desc")) {
+                    filteredCoursesAllStudent.sort(
+                    (a, b) -> Double.compare((Double) b.get("score"), (Double) a.get("score"))
+                    );
+                } else {
+                    // No sorting specified, do nothing
+                }
+            }
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(filteredCoursesAllStudent));
+    }
+
+    private void getTopStudentByLessonScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        int lessonID = Integer.parseInt(request.getParameter("lessonID"));
+        // Get all students who have enrolled in the course of the lesson
+        // LESSONS_ID -> COURSES_ID -> ENROLLMENTS -> STUDENTS -> LESSONS
+        LESSONS_Service lessonService = new LESSONS_Service();
+        LESSONS lessonObj = lessonService.getLessonById(lessonID);
+
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(lessonObj.getCourseID());
+
+        // Filter courseList created by teacher
+        if (courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
+        List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
+
+        List<USERS> studentList = new ArrayList<>();
+        for (ENROLLMENTS enrollment : enrollmentList) {
+            // Get student details by ID
+            USERS_Service userService = new USERS_Service();
+            USERS student = userService.getUserById(enrollment.getUserId());
+            // Add
+            studentList.add(student);
+        }
+
+        List<Map<String, Object>> filteredLessonsAllStudent = new ArrayList<>();
+        for (USERS student : studentList) {
+            TEACHER_Service teacherService = new TEACHER_Service();
+            List<Map<String, Object>> filteredLessons = teacherService.filteredLessonsByQuizzesAnswer(List.of(lessonObj), student.getID());
+            filteredLessonsAllStudent.addAll(filteredLessons);
+        }
+
+        if (request.getParameter("sort") != null) {
+            String sort = request.getParameter("sort");
+            if (sort.contains("score")) {
+                if (sort.contains("asc")) {
+                    filteredLessonsAllStudent.sort(
+                    (a, b) -> Double.compare((Double) a.get("score"), (Double) b.get("score"))
+                    );
+                } else if (sort.contains("desc")) {
+                    filteredLessonsAllStudent.sort(
+                    (a, b) -> Double.compare((Double) b.get("score"), (Double) a.get("score"))
+                    );
+                } else {
+                    // No sorting specified, do nothing
+                }
+            }
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(filteredLessonsAllStudent));
+    }
+
+    private void getTopStudentByQuizScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        int quizID = Integer.parseInt(request.getParameter("quizID"));
+
+        // Get all students who have taken the quiz
+        // QUIZZES_ID -> LESSONS_ID -> COURSES_ID -> ENROLLMENTS -> STUDENTS -> QUIZZES
+        QUIZZES_Service quizService = new QUIZZES_Service();
+        QUIZZES quizObj = quizService.getQuizById(quizID);
+
+        LESSONS_Service lessonService = new LESSONS_Service();
+        LESSONS lessonObj = lessonService.getLessonById(quizObj.getLessonID());
+
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(lessonObj.getCourseID());
+
+        // Filter courseList created by teacher
+        if (courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
+        List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
+
+        List<USERS> studentList = new ArrayList<>();
+        for (ENROLLMENTS enrollment : enrollmentList) {
+            // Get student details by ID
+            USERS_Service userService = new USERS_Service();
+            USERS student = userService.getUserById(enrollment.getUserId());
+            studentList.add(student);
+        }
+
+        List<Map<String, Object>> filteredQuizzesAllStudent = new ArrayList<>();
+        for (USERS student : studentList) {
+            TEACHER_Service teacherService = new TEACHER_Service();
+            List<Map<String, Object>> filteredQuizzes = teacherService.filteredQuizzesByAnswer(List.of(quizObj), student.getID());
+            filteredQuizzesAllStudent.addAll(filteredQuizzes);
+        }
+
+        if (request.getParameter("sort") != null) {
+            String sort = request.getParameter("sort");
+            if (sort.contains("score")) {
+                if (sort.contains("asc")) {
+                    filteredQuizzesAllStudent.sort(
+                    (a, b) -> Double.compare((Double) a.get("score"), (Double) b.get("score"))
+                    );
+                } else if (sort.contains("desc")) {
+                    filteredQuizzesAllStudent.sort(
+                    (a, b) -> Double.compare((Double) b.get("score"), (Double) a.get("score"))
+                    );
+                } else {
+                    // No sorting specified, do nothing
+                }
+            }
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(filteredQuizzesAllStudent));
+    }
+
+    private void getTopCourseByAvgStudentScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        //TeacherID -> COURSES -> ENROLLMENTS -> STUDENTS -> LESSONS -> QUIZZES -> AVG_SCORE
+        List<Map<String, Object>> results = new ArrayList<>();
+        COURSES_Service courseService = new COURSES_Service();
+        List<COURSES> courses = courseService.getCoursesByCreatedByUserID(teacherID);
+        if (courses.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"message\": \"No courses found for this teacher\"}");
+            return;
+        }
+        for(COURSES course : courses) {
+            // Get all students who have enrolled in the course
+            ENROLLMENTS_Service enrollmentsService = new ENROLLMENTS_Service();
+            List<ENROLLMENTS> enrollList = enrollmentsService.getEnrollmentsByCourseId(course.getID());
+
+            List<Integer> studentIDList = new ArrayList<>();
+            for( ENROLLMENTS enrollment : enrollList) {
+                // Get student details by ID
+                USERS_Service userService = new USERS_Service();
+                USERS student = userService.getUserById(enrollment.getUserId());
+                if (student != null && !studentIDList.contains(student.getID())) {
+                    studentIDList.add(student.getID());
+                }
+            }
+
+            // Calculate average score for the course
+            List<List<Map<String,Object>>> filteredCourses = new ArrayList<>();
+            for(int studentID : studentIDList) {
+                filteredCourses.add(
+                    new TEACHER_Service().filteredCoursesByLessons(List.of(course), studentID)
+                );
+            }
+            
+            double totalScore = 0.0;
+            int count = 0;
+            for(List<Map<String, Object>> courseList : filteredCourses) {
+                for(Map<String, Object> courseData : courseList){
+                    if(courseData != null && courseData.containsKey("status") && "completed".equals(courseData.get("status"))) {
+                        Object scoreObj = courseData.get("score");
+                        if (scoreObj instanceof Number) {
+                            totalScore += ((Number) scoreObj).doubleValue();
+                            count++;
+                        }
+                    }
+                }
+                double averageScore = count > 0 ? totalScore / count : 0.0;
+                averageScore = Math.round(averageScore * 100.0) / 100.0; // Round to 2 decimal places
+                results.add(Map.of(
+                    "courseID", course.getID(),
+                    "courseTitle", course.getTitle(),
+                    "averageScore", averageScore,
+                    "studentCount", count
+                ));
+            }
+            
+        }
+
+        if (request.getParameter("sort") != null) {
+            String sort = request.getParameter("sort");
+            if (sort.contains("averageScore")) {
+                if (sort.contains("asc")) {
+                    results.sort((a, b) -> Double.compare((Double) a.get("averageScore"), (Double) b.get("averageScore")));
+                } else if (sort.contains("desc")) {
+                    results.sort((a, b) -> Double.compare((Double) b.get("averageScore"), (Double) a.get("averageScore")));
+                } else {
+                    // No sorting specified, do nothing
+                }
+            }
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(results));
     }
 }
