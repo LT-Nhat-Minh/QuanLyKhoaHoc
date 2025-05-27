@@ -1,25 +1,25 @@
 package Service;
 
 import Config.DBConnection;
-import Model.ENROLLMENTS;
+import Model.ENROLLS;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ENROLLMENTS_Service {
+public class ENROLLS_Service {
 
-    public List<ENROLLMENTS> getAllEnrollments() {
-        List<ENROLLMENTS> enrollmentList = new ArrayList<>();
+    public List<ENROLLS> getAllENROLLS() {
+        List<ENROLLS> enrollmentList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM ENROLLMENTS";
+            String sql = "SELECT * FROM ENROLLS";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet result = pstmt.executeQuery();
 
             while (result.next()) {
-                ENROLLMENTS enrollment = new ENROLLMENTS();
+                ENROLLS enrollment = new ENROLLS();
                 enrollment.setUserId(result.getInt("userId"));
                 enrollment.setCourseId(result.getInt("courseId"));
                 enrollment.setCreatedAt(result.getTimestamp("createdAt"));
@@ -38,17 +38,17 @@ public class ENROLLMENTS_Service {
         }
     }
 
-    public List<ENROLLMENTS> getEnrollmentsByCourseId(int courseId) {
-        List<ENROLLMENTS> enrollmentList = new ArrayList<>();
+    public List<ENROLLS> getENROLLSByCourseId(int courseId) {
+        List<ENROLLS> enrollmentList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM ENROLLMENTS WHERE courseId = ?";
+            String sql = "SELECT * FROM ENROLLS WHERE courseId = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, courseId);
             ResultSet result = pstmt.executeQuery();
 
             while (result.next()) {
-                ENROLLMENTS enrollment = new ENROLLMENTS();
+                ENROLLS enrollment = new ENROLLS();
                 enrollment.setUserId(result.getInt("userId"));
                 enrollment.setCourseId(result.getInt("courseId"));
                 enrollment.setCreatedAt(result.getTimestamp("createdAt"));
@@ -67,11 +67,11 @@ public class ENROLLMENTS_Service {
         }
     }
 
-    public ENROLLMENTS getEnrollmentById(int id) {
-        ENROLLMENTS enrollment = new ENROLLMENTS();
+    public ENROLLS getEnrollmentById(int id) {
+        ENROLLS enrollment = new ENROLLS();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM ENROLLMENTS WHERE id = ?";
+            String sql = "SELECT * FROM ENROLLS WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
             ResultSet result = pstmt.executeQuery();
@@ -94,11 +94,11 @@ public class ENROLLMENTS_Service {
         }
     }
 
-    public ENROLLMENTS createEnrollment(ENROLLMENTS enrollment) {
+    public ENROLLS createEnrollment(ENROLLS enrollment) {
         try {
             Connection conn = DBConnection.getConnection();
 
-            String checkSql = "SELECT 1 FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+            String checkSql = "SELECT 1 FROM ENROLLS WHERE userId = ? AND courseId = ?";
             PreparedStatement pstmt = conn.prepareStatement(checkSql);
             pstmt.setInt(1, enrollment.getUserId());
             pstmt.setInt(2, enrollment.getCourseId());
@@ -108,13 +108,13 @@ public class ENROLLMENTS_Service {
                 throw new RuntimeException("User is already enrolled in this course");
             }
 
-            String insertSql = "INSERT INTO ENROLLMENTS (userId, courseId) VALUES (?, ?)";
+            String insertSql = "INSERT INTO ENROLLS (userId, courseId) VALUES (?, ?)";
             pstmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, enrollment.getUserId());
             pstmt.setInt(2, enrollment.getCourseId());
             pstmt.executeUpdate();
 
-            String selectSql = "SELECT * FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+            String selectSql = "SELECT * FROM ENROLLS WHERE userId = ? AND courseId = ?";
             pstmt = conn.prepareStatement(selectSql);
             pstmt.setInt(1, enrollment.getUserId());
             pstmt.setInt(2, enrollment.getCourseId());
@@ -123,7 +123,8 @@ public class ENROLLMENTS_Service {
             if (rs.next()) {
                 enrollment.setCreatedAt(rs.getTimestamp("createdAt"));
                 enrollment.setUpdatedAt(rs.getTimestamp("updatedAt"));
-                enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
+                enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment") == null ? "" : rs.getString("feedbackEnrollment"));
+                enrollment.setRating(rs.getInt("rating"));
             }
 
             rs.close();
@@ -136,9 +137,9 @@ public class ENROLLMENTS_Service {
         }
     }
 
-    public void updateEnrollment(ENROLLMENTS enrollment) {
+    public void updateEnrollment(ENROLLS enrollment) {
     try (Connection conn = DBConnection.getConnection()) {
-        String sql = "UPDATE ENROLLMENTS SET feedbackEnrollment = ? WHERE userId = ? AND courseId = ?";
+        String sql = "UPDATE ENROLLS SET feedbackEnrollment = ? WHERE userId = ? AND courseId = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, enrollment.getFeedbackEnrollment());
         pstmt.setInt(2, enrollment.getUserId());
@@ -152,7 +153,7 @@ public class ENROLLMENTS_Service {
 
     public void deleteEnrollment(int userId, int courseId) {
     try (Connection conn = DBConnection.getConnection()) {
-        String sql = "DELETE FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+        String sql = "DELETE FROM ENROLLS WHERE userId = ? AND courseId = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setInt(1, userId);
         pstmt.setInt(2, courseId);
@@ -162,13 +163,13 @@ public class ENROLLMENTS_Service {
     }
 }
     
-    public ENROLLMENTS getEnrollmentByUserIdAndCourseId(int userId, int courseId) {
-    ENROLLMENTS enrollment = null;
+    public ENROLLS getEnrollmentByUserIdAndCourseId(int userId, int courseId) {
+    ENROLLS enrollment = null;
 
     try {
         Connection conn = DBConnection.getConnection();
 
-        String sql = "SELECT * FROM ENROLLMENTS WHERE userId = ? AND courseId = ?";
+        String sql = "SELECT * FROM ENROLLS WHERE userId = ? AND courseId = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setInt(1, userId);
         pstmt.setInt(2, courseId);
@@ -176,7 +177,7 @@ public class ENROLLMENTS_Service {
 
         if (rs.next()) {
             
-            enrollment = new ENROLLMENTS();
+            enrollment = new ENROLLS();
             enrollment.setUserId(rs.getInt("userId"));
             enrollment.setCourseId(rs.getInt("courseId"));
             enrollment.setCreatedAt(rs.getTimestamp("createdAt"));

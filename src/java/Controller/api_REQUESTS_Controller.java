@@ -22,27 +22,33 @@ import java.util.Map;
 public class api_REQUESTS_Controller extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-                    throws ServletException, IOException {
-            response.setContentType("application/json;charset=UTF-8");
-            
+            throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
+
+        try {
             if (request.getParameter("id") != null) {
-                    // get request by ID
-                    System.out.println("Get request by ID");
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    REQUESTS_Service requestService = new REQUESTS_Service();
-                    REQUESTS requestObj = requestService.getRequestById(id);           
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write(new Gson().toJson(requestObj));
+                // Get request by ID
+                System.out.println("Get request by ID");
+                int id = Integer.parseInt(request.getParameter("id"));
+                REQUESTS_Service requestService = new REQUESTS_Service();
+                REQUESTS requestObj = requestService.getRequestById(id);
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(new Gson().toJson(requestObj));
             } else {
-                    // get all requests
-                    System.out.println("Get all requests");
-                    REQUESTS_Service requestService = new REQUESTS_Service();
-                    List<REQUESTS> requestList = requestService.getAllRequests();
-                    
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write(new Gson().toJson(requestList));
+                // Get all requests
+                System.out.println("Get all requests");
+                REQUESTS_Service requestService = new REQUESTS_Service();
+                List<REQUESTS> requestList = requestService.getAllRequests();
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(new Gson().toJson(requestList));
             }
-    }          
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
@@ -89,6 +95,7 @@ public class api_REQUESTS_Controller extends HttpServlet {
                     //get information by id
                     REQUESTS_Service requestService = new REQUESTS_Service();
                     REQUESTS requestObj = requestService.getRequestById(id);
+
                     if (requestObj == null) {
                         throw new Exception("Request not found with the provided ID");
                     }

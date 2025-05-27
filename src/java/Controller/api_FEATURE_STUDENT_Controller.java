@@ -5,13 +5,13 @@
 package Controller;
 import Model.ANSWERS;
 import Model.COURSES;
-import Model.ENROLLMENTS;
+import Model.ENROLLS;
 import Model.LESSONS;
 import Model.QUIZZES;
 import Model.STUDIES;
 import Service.ANSWERS_Service;
 import Service.COURSES_Service;
-import Service.ENROLLMENTS_Service;
+import Service.ENROLLS_Service;
 import Service.Features.STUDENT_Service;
 import Service.LESSONS_Service;
 import Service.QUIZZES_Service;
@@ -63,8 +63,8 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                         COURSES course = courseService.getCourseById(courseID);
 
                         // check if the user is enrolled in the course
-                        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                        ENROLLMENTS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(userID, courseID);
+                        ENROLLS_Service ENROLLService = new ENROLLS_Service();
+                        ENROLLS enrollment = ENROLLService.getEnrollmentByUserIdAndCourseId(userID, courseID);
                         if (enrollment != null) {
                             List<Map<String, Object>> filteredCourses = new STUDENT_Service().filteredCoursesByLessons(List.of(course), userID);
                             if (filteredCourses.isEmpty()) {
@@ -79,7 +79,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                             response.getWriter().write("{\"message\": \"User still not enroll this course.\"}");
                         }
                     } else {
-                        // Get all courses with filtering userID on ENROLLMENTS
+                        // Get all courses with filtering userID on ENROLLS
                         COURSES_Service courseService = new COURSES_Service();
                         List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
@@ -115,7 +115,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                             response.getWriter().write("{\"message\": \"No courses found for the user.\"}");
                         } else {
-                            // Get all lessons from the enrollments
+                            // Get all lessons from the ENROLLS
                             LESSONS_Service lessonService = new LESSONS_Service();
                             List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
 
@@ -137,7 +137,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                         COURSES_Service courseService = new COURSES_Service();
                         List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
-                        // Get all lessons from the enrollments
+                        // Get all lessons from the ENROLLS
                         LESSONS_Service lessonService = new LESSONS_Service();
                         List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
 
@@ -161,7 +161,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                         COURSES_Service courseService = new COURSES_Service();
                         List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
-                        // Get all lessons from the enrollments
+                        // Get all lessons from the ENROLLS
                         LESSONS_Service lessonService = new LESSONS_Service();
                         List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
 
@@ -189,7 +189,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                         COURSES_Service courseService = new COURSES_Service();
                         List<COURSES> courseList = courseService.getCoursesByUserId(userID);
 
-                        // Get all lessons from the enrollments
+                        // Get all lessons from the ENROLLS
                         LESSONS_Service lessonService = new LESSONS_Service();
                         List<LESSONS> lessonList = lessonService.getLessonByCoursesList(courseList);
 
@@ -236,87 +236,6 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
             response.getWriter().write("{\"message\": \"Invalid token\"}");
         }
     }
-
-//    @Override
-//    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-//        throws ServletException, IOException {
-//    response.setContentType("application/json;charset=UTF-8");
-//      String path = request.getPathInfo();
-//      try {
-//        if (path == null) {
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            response.getWriter().write("{\"error\":\"Missing endpoint path \"}");
-//            return;
-//        }
-//
-//        if (path.equals("/courses")) {
-//            if (request.getParameter("id") != null) {
-//                // Get course by ID
-//                int id = Integer.parseInt(request.getParameter("id"));
-//
-//                COURSES_Service courseService = new COURSES_Service();
-//                COURSES course = courseService.getCourseById(id);
-//
-//                response.setStatus(HttpServletResponse.SC_OK);
-//                response.getWriter().write(new Gson().toJson(course));
-//            } else {
-//                // Get all courses
-//                COURSES_Service courseService = new COURSES_Service();
-//                List<COURSES> courseList = courseService.getAllCourses();
-//
-//                response.setStatus(HttpServletResponse.SC_OK);
-//                response.getWriter().write(new Gson().toJson(courseList));
-//            }
-//
-//        } else if (path.equals("/lessons")) {
-//           if(request.getParameter("courseID") != null ) {
-//                int courseID = Integer.parseInt(request.getParameter("courseID"));
-//                LESSONS_Service lessonService = new LESSONS_Service();
-//                List<LESSONS> lessons = lessonService.getLessonByCourseID(courseID);
-//
-//                response.setStatus(HttpServletResponse.SC_OK);
-//                response.getWriter().write(new Gson().toJson(lessons));
-//
-//        }}
-//        else if (path.equals("/quizzes")) {
-//            if(request.getParameter("lessonID") != null ) {
-//                // Get all lessons
-//                int lessonID = Integer.parseInt(request.getParameter("lessonID"));
-//                QUIZZES_Service quizService = new QUIZZES_Service();
-//                List<QUIZZES> quiz = quizService.getLessonByQuizID(lessonID);
-//
-//                response.setStatus(HttpServletResponse.SC_OK);
-//                response.getWriter().write(new Gson().toJson(quiz));            
-//            }
-//        }
-//        else if (path.equals("/quizzesWithScore")) {
-//               String lessonParam = request.getParameter("lessonID");
-//
-//
-//            if (lessonParam != null) {
-//                // Trường hợp có lessonID: trả kết quả quiz
-//                int lessonID = Integer.parseInt(lessonParam);
-//                ANSWER_Service answerService = new ANSWER_Service();
-//                Map<String, Object> scoreData = answerService.getStudentLessonScores(lessonID);
-//                response.setStatus(HttpServletResponse.SC_OK);
-//                response.getWriter().write(new Gson().toJson(scoreData));
-//
-//            }
-//          }
-//        else {
-//            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//            response.getWriter().write("{\"error\":\"Unknown endpoint: " + path + "\"}");
-//        }
-//
-//    } catch (NumberFormatException e) {
-//        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//        response.getWriter().write("{\"error\":\"Invalid userID or lessonID\"}");
-//    } catch (Exception e) {
-//        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//        response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-//    }
-//
-//    }   
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -326,17 +245,17 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
             try {
                 int userID = (int) request.getAttribute("id");
                 String doPath = request.getPathInfo();
-                if (doPath.equals("/enrollments")) {
+                if (doPath.equals("/enrolls")) {
                     int courseID = Integer.parseInt(request.getParameter("courseID"));
                     // Validate input
                     if (courseID <= 0) {
                         throw new Exception("Missing or invalid courseID");
                     }
 
-                    ENROLLMENTS enrollment = new ENROLLMENTS();
+                    ENROLLS enrollment = new ENROLLS();
                     enrollment.setUserId(userID);
                     enrollment.setCourseId(courseID);
-                    ENROLLMENTS_Service service = new ENROLLMENTS_Service();
+                    ENROLLS_Service service = new ENROLLS_Service();
                     service.createEnrollment(enrollment);
 
                     // Return result
@@ -367,8 +286,8 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
                     LESSONS lesson = lessonService.getLessonById(quiz.getLessonID());
                     COURSES_Service courseService = new COURSES_Service();
                     COURSES course = courseService.getCourseById(lesson.getCourseID());
-                    ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-                    ENROLLMENTS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(userID, course.getID());
+                    ENROLLS_Service ENROLLService = new ENROLLS_Service();
+                    ENROLLS enrollment = ENROLLService.getEnrollmentByUserIdAndCourseId(userID, course.getID());
                     if (enrollment == null) {
                         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                         response.getWriter().write("{\"error\":\"User is not in the course of this quiz\"}");
@@ -414,6 +333,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
 
             int courseId = Integer.parseInt(params.get("courseId"));
             String feedback = params.get("feedbackEnrollment");
+            int rating = Integer.parseInt(params.get("rating"));
 
             // Validate input
             if (courseId <= 0) {
@@ -423,17 +343,18 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
             }
 
             // Tạo đối tượng enrollment với thông tin cập nhật
-            ENROLLMENTS enrollment = new ENROLLMENTS();
+            ENROLLS enrollment = new ENROLLS();
             enrollment.setUserId(userID);
             enrollment.setCourseId(courseId);
             enrollment.setFeedbackEnrollment(feedback);
+            enrollment.setRating(rating);
 
             // Gọi service để cập nhật
-            ENROLLMENTS_Service service = new ENROLLMENTS_Service();
+            ENROLLS_Service service = new ENROLLS_Service();
             service.updateEnrollment(enrollment);
 
             // Giả sử bạn có hàm getEnrollmentById để lấy lại bản ghi đã cập nhật
-            ENROLLMENTS updated = service.getEnrollmentByUserIdAndCourseId(userID, courseId);
+            ENROLLS updated = service.getEnrollmentByUserIdAndCourseId(userID, courseId);
 
 
                 response.setStatus(HttpServletResponse.SC_OK);

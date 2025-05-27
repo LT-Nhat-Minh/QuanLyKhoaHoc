@@ -5,12 +5,12 @@
 package Controller.Features;
 
 import Model.COURSES;
-import Model.ENROLLMENTS;
+import Model.ENROLLS;
 import Model.LESSONS;
 import Model.QUIZZES;
 import Model.USERS;
 import Service.COURSES_Service;
-import Service.ENROLLMENTS_Service;
+import Service.ENROLLS_Service;
 import Service.Features.TEACHER_Service;
 import Service.LESSONS_Service;
 import Service.QUIZZES_Service;
@@ -198,7 +198,7 @@ public class api_TEACHER_Controller extends HttpServlet {
     private void getTopStudentByCourseScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
         int courseID = Integer.parseInt(request.getParameter("courseID"));
         // Get all students who have enrolled in the course
-        // COURSES_ID -> ENROLLMENTS -> STUDENTS -> COURSES
+        // COURSES_ID -> ENROLLS -> STUDENTS -> COURSES
         COURSES_Service courseService = new COURSES_Service();
         COURSES courseObj = courseService.getCourseById(courseID);
         if (courseObj == null) {
@@ -214,10 +214,10 @@ public class api_TEACHER_Controller extends HttpServlet {
             return;
         }
 
-        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-        List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
+        ENROLLS_Service ENROLLService = new ENROLLS_Service();
+        List<ENROLLS> enrollmentList = ENROLLService.getENROLLSByCourseId(courseObj.getID());
         List<USERS> studentList = new ArrayList<>();
-        for (ENROLLMENTS enrollment : enrollmentList) {
+        for (ENROLLS enrollment : enrollmentList) {
             // Get student details by ID
             USERS_Service userService = new USERS_Service();
             USERS student = userService.getUserById(enrollment.getUserId());
@@ -258,7 +258,7 @@ public class api_TEACHER_Controller extends HttpServlet {
     private void getTopStudentByLessonScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
         int lessonID = Integer.parseInt(request.getParameter("lessonID"));
         // Get all students who have enrolled in the course of the lesson
-        // LESSONS_ID -> COURSES_ID -> ENROLLMENTS -> STUDENTS -> LESSONS
+        // LESSONS_ID -> COURSES_ID -> ENROLLS -> STUDENTS -> LESSONS
         LESSONS_Service lessonService = new LESSONS_Service();
         LESSONS lessonObj = lessonService.getLessonById(lessonID);
 
@@ -272,11 +272,11 @@ public class api_TEACHER_Controller extends HttpServlet {
             return;
         }
 
-        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-        List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
+        ENROLLS_Service ENROLLService = new ENROLLS_Service();
+        List<ENROLLS> enrollmentList = ENROLLService.getENROLLSByCourseId(courseObj.getID());
 
         List<USERS> studentList = new ArrayList<>();
-        for (ENROLLMENTS enrollment : enrollmentList) {
+        for (ENROLLS enrollment : enrollmentList) {
             // Get student details by ID
             USERS_Service userService = new USERS_Service();
             USERS student = userService.getUserById(enrollment.getUserId());
@@ -316,7 +316,7 @@ public class api_TEACHER_Controller extends HttpServlet {
         int quizID = Integer.parseInt(request.getParameter("quizID"));
 
         // Get all students who have taken the quiz
-        // QUIZZES_ID -> LESSONS_ID -> COURSES_ID -> ENROLLMENTS -> STUDENTS -> QUIZZES
+        // QUIZZES_ID -> LESSONS_ID -> COURSES_ID -> ENROLLS -> STUDENTS -> QUIZZES
         QUIZZES_Service quizService = new QUIZZES_Service();
         QUIZZES quizObj = quizService.getQuizById(quizID);
 
@@ -333,11 +333,11 @@ public class api_TEACHER_Controller extends HttpServlet {
             return;
         }
 
-        ENROLLMENTS_Service enrollmentService = new ENROLLMENTS_Service();
-        List<ENROLLMENTS> enrollmentList = enrollmentService.getEnrollmentsByCourseId(courseObj.getID());
+        ENROLLS_Service ENROLLService = new ENROLLS_Service();
+        List<ENROLLS> enrollmentList = ENROLLService.getENROLLSByCourseId(courseObj.getID());
 
         List<USERS> studentList = new ArrayList<>();
-        for (ENROLLMENTS enrollment : enrollmentList) {
+        for (ENROLLS enrollment : enrollmentList) {
             // Get student details by ID
             USERS_Service userService = new USERS_Service();
             USERS student = userService.getUserById(enrollment.getUserId());
@@ -356,11 +356,17 @@ public class api_TEACHER_Controller extends HttpServlet {
             if (sort.contains("score")) {
                 if (sort.contains("asc")) {
                     filteredQuizzesAllStudent.sort(
-                    (a, b) -> Double.compare((Double) a.get("score"), (Double) b.get("score"))
+                    (a, b) -> Double.compare(
+                        ((Number) a.get("score")).doubleValue(), 
+                        ((Number) b.get("score")).doubleValue()
+                    )
                     );
                 } else if (sort.contains("desc")) {
                     filteredQuizzesAllStudent.sort(
-                    (a, b) -> Double.compare((Double) b.get("score"), (Double) a.get("score"))
+                    (a, b) -> Double.compare(
+                        ((Number) b.get("score")).doubleValue(), 
+                        ((Number) a.get("score")).doubleValue()
+                    )
                     );
                 } else {
                     // No sorting specified, do nothing
@@ -373,7 +379,7 @@ public class api_TEACHER_Controller extends HttpServlet {
     }
 
     private void getTopCourseByAvgStudentScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
-        //TeacherID -> COURSES -> ENROLLMENTS -> STUDENTS -> LESSONS -> QUIZZES -> AVG_SCORE
+        //TeacherID -> COURSES -> ENROLLS -> STUDENTS -> LESSONS -> QUIZZES -> AVG_SCORE
         List<Map<String, Object>> results = new ArrayList<>();
         COURSES_Service courseService = new COURSES_Service();
         List<COURSES> courses = courseService.getCoursesByCreatedByUserID(teacherID);
@@ -384,11 +390,11 @@ public class api_TEACHER_Controller extends HttpServlet {
         }
         for(COURSES course : courses) {
             // Get all students who have enrolled in the course
-            ENROLLMENTS_Service enrollmentsService = new ENROLLMENTS_Service();
-            List<ENROLLMENTS> enrollList = enrollmentsService.getEnrollmentsByCourseId(course.getID());
+            ENROLLS_Service ENROLLSService = new ENROLLS_Service();
+            List<ENROLLS> enrollList = ENROLLSService.getENROLLSByCourseId(course.getID());
 
             List<Integer> studentIDList = new ArrayList<>();
-            for( ENROLLMENTS enrollment : enrollList) {
+            for( ENROLLS enrollment : enrollList) {
                 // Get student details by ID
                 USERS_Service userService = new USERS_Service();
                 USERS student = userService.getUserById(enrollment.getUserId());
@@ -420,8 +426,7 @@ public class api_TEACHER_Controller extends HttpServlet {
                 double averageScore = count > 0 ? totalScore / count : 0.0;
                 averageScore = Math.round(averageScore * 100.0) / 100.0; // Round to 2 decimal places
                 results.add(Map.of(
-                    "courseID", course.getID(),
-                    "courseTitle", course.getTitle(),
+                    "course", courseList.get(0).get("course"),
                     "averageScore", averageScore,
                     "studentCount", count
                 ));
@@ -437,8 +442,20 @@ public class api_TEACHER_Controller extends HttpServlet {
                 } else if (sort.contains("desc")) {
                     results.sort((a, b) -> Double.compare((Double) b.get("averageScore"), (Double) a.get("averageScore")));
                 } else {
-                    // No sorting specified, do nothing
+                    // No sorting specified, sort descending by default
+                    results.sort((a, b) -> Double.compare((Double) b.get("averageScore"), (Double) a.get("averageScore")));
                 }
+            } else if (sort.contains("studentCount")) {
+                if (sort.contains("asc")) {
+                    results.sort((a, b) -> Integer.compare((Integer) a.get("studentCount"), (Integer) b.get("studentCount")));
+                } else if (sort.contains("desc")) {
+                    results.sort((a, b) -> Integer.compare((Integer) b.get("studentCount"), (Integer) a.get("studentCount")));
+                } else {
+                    // No sorting specified, sort descending by default
+                    results.sort((a, b) -> Integer.compare((Integer) b.get("studentCount"), (Integer) a.get("studentCount")));
+                }
+            } else {
+                // No sorting specified, do nothing
             }
         }
 

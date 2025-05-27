@@ -71,6 +71,10 @@ public class REQUESTS_Service{
             pstmt.close();
             conn.close();
 
+            if (request.getId() == 0) {
+                throw new RuntimeException("Request not found with ID: " + id);
+            }
+
             return request;
         } catch (Exception e) {
             throw new RuntimeException("Error: " + e.getMessage());

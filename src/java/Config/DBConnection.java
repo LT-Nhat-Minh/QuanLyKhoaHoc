@@ -13,8 +13,8 @@ import java.sql.DriverManager;
  */
 public class DBConnection {
     public static Connection getConnection() throws Exception {
-        String url = "jdbc:sqlserver://n_minh\\MSSQLSERVERJAVA:1433;;"
-                + "databaseName=qlkh_beta5;"
+        String url = "jdbc:sqlserver://DESKTOP-Minh118:1433;;"
+                + "databaseName=qlkh_beta9;"
                 + "encrypt=true;"
                 + "trustServerCertificate=true";
         String user = "sa";

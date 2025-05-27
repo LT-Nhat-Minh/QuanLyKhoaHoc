@@ -93,7 +93,7 @@ public class STUDENT_Service {
                 filteredLessons.add(lessonData);
             }
         }
-        
+
         return filteredLessons;
     }
 
@@ -117,9 +117,8 @@ public class STUDENT_Service {
                 totalLessonScore += (double) lessonData.get("score");
             }
 
-            System.out.println("Total lesson score: " + totalLessonScore);
-             double score = lessonList.isEmpty() ? 0.0 : (totalLessonScore / lessonList.size());
-             score = Math.round(score * 100.0) / 100.0; // làm tròn 2 chữ số
+            double score = lessonList.isEmpty() ? 0.0 : (totalLessonScore / lessonList.size());
+            score = Math.round(score * 100.0) / 100.0; // làm tròn 2 chữ số
             if (hasCompletedLesson) {
                 Map<String, Object> courseData = Map.of(
                     "course", course,

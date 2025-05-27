@@ -98,7 +98,7 @@ public class COURSES_Service {
         List<COURSES> coursesByUserIdList = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
-            String sql = "SELECT * FROM COURSES WHERE id IN (SELECT courseID FROM ENROLLMENTS WHERE userID = ?)";
+            String sql = "SELECT * FROM COURSES WHERE id IN (SELECT courseID FROM ENROLLS WHERE userID = ?)";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, userId);
             ResultSet result = pstmt.executeQuery();

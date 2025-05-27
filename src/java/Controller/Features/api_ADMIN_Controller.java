@@ -6,10 +6,10 @@ package Controller.Features;
  */
 
 import Model.COURSES;
-import Model.ENROLLMENTS;
+import Model.ENROLLS;
 import Model.USERS;
 import Service.COURSES_Service;
-import Service.ENROLLMENTS_Service;
+import Service.ENROLLS_Service;
 import Service.USERS_Service;
 import Utils.jwt;
 import com.google.gson.Gson;
@@ -106,10 +106,10 @@ public class api_ADMIN_Controller extends HttpServlet {
             List<COURSES> courses = entry.getValue();
             List<Integer> studentIDList = new ArrayList<>();
             for (COURSES course : courses) {
-                ENROLLMENTS_Service enrollmentsService = new ENROLLMENTS_Service();
-                List<ENROLLMENTS> enrollList = enrollmentsService.getEnrollmentsByCourseId(course.getID());
+                ENROLLS_Service ENROLLSService = new ENROLLS_Service();
+                List<ENROLLS> enrollList = ENROLLSService.getENROLLSByCourseId(course.getID());
                 // check if the student is already in the list
-                for (ENROLLMENTS i : enrollList) {
+                for (ENROLLS i : enrollList) {
                     if (!studentIDList.contains(i.getUserId())) {
                         studentIDList.add(i.getUserId());
                     }
