@@ -33,7 +33,7 @@ public class api_USERS_Controller extends HttpServlet {
             throws ServletException, IOException {
 
         // check validate token        
-        if (jwt.validateToken(request)) {
+        if (jwt.validateToken(request, response)) {
             // check UserRoleID
             int UserRoleID = (int) request.getAttribute("roleID");
             if (UserRoleID == 3) { // 1 student, 2 teacher, 3 admin
@@ -90,7 +90,7 @@ public class api_USERS_Controller extends HttpServlet {
             throws IOException {
         response.setContentType("application/json;charset=UTF-8");
 
-        if(jwt.validateToken(request)) {
+        if(jwt.validateToken(request, response)) {
             //check UserRoleID
             int UserRoleID = (int) request.getAttribute("roleID");
             if(UserRoleID == 3) { // 1 student, 2 teacher, 3 admin
@@ -130,7 +130,7 @@ public class api_USERS_Controller extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if(jwt.validateToken(request)) {
+        if(jwt.validateToken(request, response)) {
             //check roleID
             int UserRoleID = (int) request.getAttribute("roleID");
             if(UserRoleID == 3) { // 1 student, 2 teacher, 3 admin
@@ -175,7 +175,7 @@ public class api_USERS_Controller extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if(jwt.validateToken(request)) {
+        if(jwt.validateToken(request, response)) {
             //check UserRoleID
             int UserRoleID = (int) request.getAttribute("roleID");
             if(UserRoleID == 3) { // 1 student, 2 teacher, 3 admin

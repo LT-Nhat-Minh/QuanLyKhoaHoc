@@ -14,10 +14,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class jwt {
     //validate token with java-jwt
-    public static boolean validateToken(HttpServletRequest request){
+    public static boolean validateToken(HttpServletRequest request, HttpServletResponse response) throws IOException{
         // Get the token from the Authorization header
         String authorizationHeader = request.getHeader("Authorization");
 
@@ -36,11 +38,10 @@ public class jwt {
 
             DecodedJWT decodedJWT = verifier.verify(token);
 
-            // Print claims for debugging
-            System.out.println("userName: " + decodedJWT.getClaim("userName").asString());
-            System.out.println("email: " + decodedJWT.getClaim("email").asString());
-            System.out.println("roleID: " + decodedJWT.getClaim("roleID").asInt());
-            System.out.println("id: " + decodedJWT.getClaim("id").asInt());
+            // if user is banned
+            if (decodedJWT.getClaim("isBanned").asBoolean() != null && decodedJWT.getClaim("isBanned").asBoolean()) {
+                throw new JWTVerificationException("User is banned");
+            }
 
             //attach id to request for authorization and authentication
             request.setAttribute("id", decodedJWT.getClaim("id").asInt());
@@ -51,8 +52,9 @@ public class jwt {
             return true; // Token is valid
         } catch (JWTVerificationException exception) {
             // Invalid signature/claims
-            System.out.println("Invalid token: " + exception.getMessage());
-            return false;
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"error\":\"" + exception.getMessage() + "\"}");
+            return true;
         }
     }
 }

@@ -33,6 +33,7 @@ public class USERS_Service {
                 user.setPassword(result.getString("password"));
                 user.setEmail(result.getString("email"));
                 user.setRoleID(result.getInt("roleID"));
+                user.setIsBanned(result.getBoolean("isBanned"));
                 userList.add(user);
             }
 
@@ -62,6 +63,7 @@ public class USERS_Service {
                 user.setPassword(result.getString("password"));
                 user.setEmail(result.getString("email"));
                 user.setRoleID(result.getInt("roleID"));
+                user.setIsBanned(result.getBoolean("isBanned"));
                 userList.add(user);
             }
 
@@ -90,6 +92,7 @@ public class USERS_Service {
                 user.setPassword(result.getString("password"));
                 user.setEmail(result.getString("email"));
                 user.setRoleID(result.getInt("roleID"));
+                user.setIsBanned(result.getBoolean("isBanned"));
             }
 
             result.close();
@@ -130,13 +133,23 @@ public class USERS_Service {
     public void updateUser(USERS user) {
          try{
             Connection conn = DBConnection.getConnection();
-            String sql = "UPDATE USERS SET username = ?, password = ?, email = ?, roleID = ? WHERE id = ?";
+            //check if user exists
+            if (getUserById(user.getID()) == null) {
+                throw new RuntimeException("User with ID " + user.getID() + " does not exist.");
+            }
+
+            //get the current user details
+            USERS currentUser = getUserById(user.getID());
+
+            
+            String sql = "UPDATE USERS SET username = ?, password = ?, email = ?, roleID = ?, isBanned = ? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, user.getUserName());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setInt(4, user.getRoleID());
-            pstmt.setInt(5, user.getID());
+            pstmt.setString(1, user.getUserName() == null ? currentUser.getUserName() : user.getUserName());
+            pstmt.setString(2, user.getPassword() == null ? currentUser.getPassword() : user.getPassword());
+            pstmt.setString(3, user.getEmail() == null ? currentUser.getEmail() : user.getEmail());
+            pstmt.setInt(4, user.getRoleID() == 0 ? currentUser.getRoleID() : user.getRoleID());
+            pstmt.setBoolean(5, user.getIsBanned() == null ? currentUser.getIsBanned() : user.getIsBanned());
+            pstmt.setInt(6, user.getID());
             pstmt.executeUpdate();
 
             pstmt.close();

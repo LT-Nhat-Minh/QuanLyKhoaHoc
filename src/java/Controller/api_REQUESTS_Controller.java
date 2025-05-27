@@ -53,7 +53,7 @@ public class api_REQUESTS_Controller extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if(jwt.validateToken(request)){
+        if(jwt.validateToken(request, response)){
             try{
                 String title = request.getParameter("title");
                 String description = request.getParameter("description");
@@ -85,7 +85,7 @@ public class api_REQUESTS_Controller extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if(jwt.validateToken(request)){
+        if(jwt.validateToken(request, response)){
             int UserRoleID = (int) request.getAttribute("roleID");
             if(UserRoleID == 3) { // 1 student, 2 teacher, 3 admin
                 try {
@@ -160,7 +160,7 @@ public class api_REQUESTS_Controller extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if(jwt.validateToken(request)){
+        if(jwt.validateToken(request, response)){
             int UserRoleID = (int) request.getAttribute("roleID");
             try {
                 int requestID = Integer.parseInt(request.getParameter("id"));

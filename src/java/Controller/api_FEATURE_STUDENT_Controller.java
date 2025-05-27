@@ -46,7 +46,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
         throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
         String path = request.getPathInfo();
-        if (jwt.validateToken(request)) {
+        if (jwt.validateToken(request, response)) {
             int userID = (int) request.getAttribute("id");
             try {
                 if (path == null) {
@@ -241,7 +241,7 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if (jwt.validateToken(request)) {
+        if (jwt.validateToken(request, response)) {
             try {
                 int userID = (int) request.getAttribute("id");
                 String doPath = request.getPathInfo();
@@ -319,57 +319,59 @@ public class api_FEATURE_STUDENT_Controller extends HttpServlet {
     }
     
     
-   @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) 
-    throws ServletException, IOException {
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+            response.setContentType("application/json;charset=UTF-8");
+            if (jwt.validateToken(request, response)) {
+                try {
+                    String path = request.getPathInfo();
+                    if ("/enrolls".equals(path)) {
+                    int userID = (int) request.getAttribute("id");
 
-    response.setContentType("application/json;charset=UTF-8");
-     if (jwt.validateToken(request)) {
-        try {
-                int userID = (int) request.getAttribute("id");
-    
-        // Parse dữ liệu từ request body (x-www-form-urlencoded)
-            Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+                    // Parse data from request body (x-www-form-urlencoded)
+                    Map<String, String> params = parseForm.parseFormUrlEncoded(request);
 
-            int courseId = Integer.parseInt(params.get("courseId"));
-            String feedback = params.get("feedbackEnrollment");
-            int rating = Integer.parseInt(params.get("rating"));
+                    int courseId = Integer.parseInt(params.get("courseID"));
+                    String feedback = params.get("feedbackEnrollment");
+                    int rating = Integer.parseInt(params.get("rating"));
 
-            // Validate input
-            if (courseId <= 0) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\":\"Invalid userId, courseId\"}");
-                return;
+                    System.out.println("userID: " + userID);
+                    System.out.println("courseId: " + courseId);
+                    System.out.println("feedback: " + feedback);
+                    System.out.println("rating: " + rating);
+
+                    // Validate input
+                    if (courseId <= 0) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"error\":\"Invalid userId, courseId\"}");
+                        return;
+                    }
+
+                    // Create enrollment object with updated information
+                    ENROLLS enrollment = new ENROLLS();
+                    enrollment.setUserId(userID);
+                    enrollment.setCourseId(courseId);
+                    enrollment.setFeedbackEnrollment(feedback);
+                    enrollment.setRating(rating);
+
+                    // Call service to update
+                    ENROLLS_Service service = new ENROLLS_Service();
+                    service.updateEnrollment(enrollment);
+
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write(new Gson().toJson(enrollment));
+                    } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"error\":\"Unknown endpoint: " + path + "\"}");
+                    }
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"message\": \"Invalid token\"}");
             }
-
-            // Tạo đối tượng enrollment với thông tin cập nhật
-            ENROLLS enrollment = new ENROLLS();
-            enrollment.setUserId(userID);
-            enrollment.setCourseId(courseId);
-            enrollment.setFeedbackEnrollment(feedback);
-            enrollment.setRating(rating);
-
-            // Gọi service để cập nhật
-            ENROLLS_Service service = new ENROLLS_Service();
-            service.updateEnrollment(enrollment);
-
-            // Giả sử bạn có hàm getEnrollmentById để lấy lại bản ghi đã cập nhật
-            ENROLLS updated = service.getEnrollmentByUserIdAndCourseId(userID, courseId);
-
-
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new Gson().toJson(updated));
-
-
-        } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Invalid number format\"}");
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-        }}
-}
-
-
-
+        }
 }

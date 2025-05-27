@@ -38,7 +38,7 @@ public class api_TEACHER_Controller extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-        if(jwt.validateToken(request)) {
+        if(jwt.validateToken(request, response)) {
             int teacherID = (int) request.getAttribute("id");
             int userRoleID = (int) request.getAttribute("roleID");
             if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin
@@ -83,7 +83,7 @@ public class api_TEACHER_Controller extends HttpServlet {
         response.setContentType("application/json;charset=UTF-8");
         String path = request.getPathInfo();
 
-        if (jwt.validateToken(request)) {
+        if (jwt.validateToken(request, response)) {
             int userRoleID = (int) request.getAttribute("roleID");
 
             if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin
@@ -431,7 +431,6 @@ public class api_TEACHER_Controller extends HttpServlet {
                     "studentCount", count
                 ));
             }
-            
         }
 
         if (request.getParameter("sort") != null) {
