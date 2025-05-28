@@ -170,10 +170,11 @@ public class QUIZZES_Service {
             Connection conn = DBConnection.getConnection();
             String sql = "UPDATE QUIZZES SET LessonId = ?, title = ?, question = ?, correctAnswer=? WHERE id = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, quiz.getTitle());
-            pstmt.setString(2, quiz.getQuestion());
-            pstmt.setInt(3, quiz.getCorrectAnswer());
-            pstmt.setInt(4, quiz.getID());
+            pstmt.setInt(1, quiz.getLessonID());
+            pstmt.setString(2, quiz.getTitle());
+            pstmt.setString(3, quiz.getQuestion());
+            pstmt.setInt(4, quiz.getCorrectAnswer());
+            pstmt.setInt(5, quiz.getID());
             pstmt.executeUpdate();
 
             pstmt.close();

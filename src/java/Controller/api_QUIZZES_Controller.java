@@ -95,13 +95,11 @@ public class api_QUIZZES_Controller extends HttpServlet {
             // Manually parse form data from body (x-www-form-urlencoded)
             Map<String, String> params = parseForm.parseFormUrlEncoded(request);
             
-            System.out.println("params: " + params);
-
             int id = Integer.parseInt(params.get("id"));
-            int lessonID = Integer.parseInt(request.getParameter("lessonID"));
-            String title = request.getParameter("title");
-            String question = request.getParameter("question");
-            int correctAnswer = Integer.parseInt(request.getParameter("correctAnswer"));
+            int lessonID = Integer.parseInt(params.get("lessonID"));
+            String title = params.get("title");
+            String question = params.get("question");
+            int correctAnswer = Integer.parseInt(params.get("correctAnswer"));
 
             // Validate data
             if (title == null || question == null) {

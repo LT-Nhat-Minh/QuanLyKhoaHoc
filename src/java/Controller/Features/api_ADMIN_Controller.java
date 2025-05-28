@@ -40,9 +40,10 @@ public class api_ADMIN_Controller extends HttpServlet {
             if (userRoleID == 3) { // 1 student, 2 teacher, 3 admin
                 String path = request.getPathInfo();
                 switch (path) {
-                    case "/users":
+                    case "/users/courses":
                         // Handle user-related admin actions
                         response.getWriter().write("{\"message\": \"Admin access to users\"}");
+                        getCoursesByUserID(response, request);
                         break;
                     case "/teachers":
                         String sort = request.getParameter("sort");
@@ -71,6 +72,7 @@ public class api_ADMIN_Controller extends HttpServlet {
                         // Handle lesson-related admin actions
                         response.getWriter().write("{\"message\": \"Admin access to lessons\"}");
                         break;
+                     
                     default:
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                         response.getWriter().write("{\"message\": \"Resource not found\"}");
@@ -171,5 +173,21 @@ public class api_ADMIN_Controller extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(new Gson().toJson(results));
     }
+
+    private void getCoursesByUserID(HttpServletResponse response, HttpServletRequest request) throws IOException {
+          int userID = Integer.parseInt(request.getParameter("userID"));
+            COURSES_Service coursesService = new COURSES_Service();
+            List<COURSES> courses = coursesService.getCoursesByUserId(userID);
+            
+            if (courses != null && !courses.isEmpty()) {
+                  response.setStatus(HttpServletResponse.SC_OK);
+                  response.getWriter().write(new Gson().toJson(courses));
+            } else {
+                  response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                  response.getWriter().write("{\"message\": \"No courses found for the specified user\"}");
+            }
+    }
+    
+    
 }
 

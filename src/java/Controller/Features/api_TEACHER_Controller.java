@@ -18,7 +18,6 @@ import Service.USERS_Service;
 import Utils.jwt;
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -462,4 +461,143 @@ public class api_TEACHER_Controller extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(new Gson().toJson(results));
     }
+
+      @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    response.setContentType("application/json;charset=UTF-8");
+    if(jwt.validateToken(request)) {
+        int teacherID = (int) request.getAttribute("id");
+        int userRoleID = (int) request.getAttribute("roleID");
+        if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin
+            String path = request.getPathInfo();
+            switch (path) {
+                case "/courses": // Cập nhật khóa học
+                    updateCourse(request, response, teacherID);
+                    break;
+                case "/lessons": // Cập nhật bài học
+                    updateLesson(request, response, teacherID);
+                    break;
+                case "/quizzies": // Cập nhật quiz
+                    updateQuiz(request, response, teacherID);
+                    break;
+                default:
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"error\":\"Invalid endpoint\"}");
+                    break;
+            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You do not have permission to access this resource\"}");
+        }
+    } else {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write("{\"message\": \"Invalid token\"}");
+    }
+}
+
+    private void updateCourse(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        int courseID = Integer.parseInt(request.getParameter("courseID"));
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(courseID);
+
+        // Check if the course exists and is created by the teacher
+        if (courseObj == null || courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        String title = request.getParameter("title");
+        String description = request.getParameter("description");
+        Double price = Double.parseDouble(request.getParameter("price"));
+
+        // Validate input
+        if (title == null || description == null || price <= 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Missing required fields\"}");
+            return;
+        }
+
+        // Update course
+        courseObj.setTitle(title);
+        courseObj.setDescription(description);
+        courseObj.setPrice(price);
+        courseService.updateCourse(courseObj);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(courseObj));
+    }
+
+    private void updateLesson(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        int lessonID = Integer.parseInt(request.getParameter("lessonID"));
+        LESSONS_Service lessonService = new LESSONS_Service();
+        LESSONS lessonObj = lessonService.getLessonById(lessonID);
+
+        // Check if the lesson exists and is created by the teacher
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(lessonObj.getCourseID());
+        
+        if (lessonObj == null || courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this lesson\"}");
+            return;
+        }
+
+        String title = request.getParameter("title");
+        String content = request.getParameter("content");
+        String videoURL = request.getParameter("videoURL");
+
+       if (title == null || content == null || videoURL == null) {
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    response.getWriter().write("{\"error\":\"Missing required fields\"}");
+    return;
+}
+
+// Cập nhật thông tin bài học
+lessonObj.setTitle(title);
+lessonObj.setContent(content);
+lessonObj.setVideoURL(videoURL);
+lessonService.updateLesson(lessonObj);
+
+// Trả về lesson đã cập nhật
+response.setStatus(HttpServletResponse.SC_OK);
+response.getWriter().write(new Gson().toJson(lessonObj));
+        
+        
+
+}
+    // Cập nhật quiz
+    private void updateQuiz(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+    int quizID = Integer.parseInt(request.getParameter("quizID"));
+    String title = request.getParameter("title");
+    String question = request.getParameter("question");
+    int correctAnswer = Integer.parseInt(request.getParameter("correctAnswer"));
+
+    QUIZZES_Service quizService = new QUIZZES_Service();
+    QUIZZES quiz = quizService.getQuizById(quizID);
+
+    if (quiz == null) {
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write("{\"message\": \"Quiz not found\"}");
+        return;
+    }
+    LESSONS_Service lessonService = new LESSONS_Service();
+    LESSONS lesson = lessonService.getLessonById(quiz.getLessonID());
+    COURSES_Service courseService = new COURSES_Service();
+    COURSES course = courseService.getCourseById(lesson.getCourseID());
+    if (course == null || course.getCreatedByUserID() != teacherID) {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+        return;
+    }
+    quiz.setTitle(title);
+    quiz.setQuestion(question);
+    quiz.setCorrectAnswer(correctAnswer);
+    quizService.updateQuiz(quiz);
+
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.getWriter().write(new Gson().toJson(quiz));
+}
+
 }
