@@ -27,9 +27,10 @@ public class auth_Service {
                 int id = result.getInt("id");
                 String userName = result.getString("userName");
                 int roleID = result.getInt("roleID");
+                Boolean isBanned = result.getBoolean("isBanned");
                 
                 // Generate JWT token
-                String token = new USERS(id, userName, password, email, roleID).generateToken();
+                String token = new USERS(id, userName, password, email, roleID, isBanned).generateToken();
                 System.out.println("JWT Token: " + token);
                 return token;
             } else {
@@ -68,6 +69,7 @@ public class auth_Service {
                     user.setEmail(result.getString("email"));
                     user.setPassword(result.getString("password"));
                     user.setRoleID(result.getInt("RoleId"));
+                    user.setIsBanned(result.getBoolean("isBanned"));
                     
                     return user;
                 } else {

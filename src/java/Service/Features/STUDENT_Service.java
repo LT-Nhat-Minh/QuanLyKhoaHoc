@@ -56,7 +56,6 @@ public class STUDENT_Service {
             QUIZZES_Service quizService = new QUIZZES_Service();
             List<QUIZZES> quizList = quizService.getQuizByLessonID(lesson.getID());
             if (quizList == null || quizList.isEmpty()) {
-                System.out.println("No quizzes available for the lesson with ID: " + lesson.getID());
                 continue; // Skip to the next lesson if no quizzes are available
             }
             List<Map<String, Object>> filteredQuizzes = this.filteredQuizzesByAnswer(quizList, studentID);
@@ -103,7 +102,6 @@ public class STUDENT_Service {
             LESSONS_Service lessonService = new LESSONS_Service();
             List<LESSONS> lessonList = lessonService.getLessonByCourseID(course.getID());
             if (lessonList == null || lessonList.isEmpty()) {
-                System.out.println("No lessons available with course ID: " + course.getID());
                 continue; // Skip to the next lesson if no quizzes are available
             }
             List<Map<String, Object>> filteredLessons = this.filteredLessonsByQuizzesAnswer(lessonList, studentID);

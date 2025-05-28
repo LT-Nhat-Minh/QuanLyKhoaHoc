@@ -12,9 +12,27 @@ import java.sql.DriverManager;
  * @author minhk
  */
 public class DBConnection {
+<<<<<<< HEAD
 //    public static Connection getConnection() throws Exception {
 //        String url = "jdbc:sqlserver://DESKTOP-Minh118:1433;;"
 //                + "databaseName=qlkh_beta9;"
+=======
+    public static Connection getConnection() throws Exception {
+        String url = "jdbc:sqlserver://DESKTOP-Minh118:1433;;"
+                + "databaseName=qlkh_beta12;"
+                + "encrypt=true;"
+                + "trustServerCertificate=true";
+        String user = "sa";
+        String pass = "123456";
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        return DriverManager.getConnection(url, user, pass);
+    }
+    
+    
+//     public static Connection getConnection() throws Exception {
+//        String url = "jdbc:sqlserver://WIN-VSV1A4EOCDD\\SQLEXPRESS01:1433;;"
+//                + "databaseName=qlkhonline;"
+>>>>>>> origin/master
 //                + "encrypt=true;"
 //                + "trustServerCertificate=true";
 //        String user = "sa";

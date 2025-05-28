@@ -8,11 +8,14 @@ import Model.QUIZZES;
 import Model.USERS;
 import Model.ANSWERS;
 import Model.COURSES;
+import Model.ENROLLS;
 import Model.LESSONS;
 import Service.ANSWERS_Service;
+import Service.ENROLLS_Service;
 import Service.LESSONS_Service;
 import Service.QUIZZES_Service;
 import Service.USERS_Service;
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +62,6 @@ public class TEACHER_Service {
             QUIZZES_Service quizService = new QUIZZES_Service();
             List<QUIZZES> quizList = quizService.getQuizByLessonID(lesson.getID());
             if (quizList == null || quizList.isEmpty()) {
-                System.out.println("No quizzes available for the lesson with ID: " + lesson.getID());
                 continue; // Skip to the next lesson if no quizzes are available
             }
             List<Map<String, Object>> filteredQuizzes = this.filteredQuizzesByAnswer(quizList, studentID);
@@ -109,9 +111,15 @@ public class TEACHER_Service {
             LESSONS_Service lessonService = new LESSONS_Service();
             List<LESSONS> lessonList = lessonService.getLessonByCourseID(course.getID());
             if (lessonList == null || lessonList.isEmpty()) {
-                System.out.println("No lessons available for the course with ID: " + course.getID());
                 continue; // Skip to the next course if no lessons are available
             }
+
+            // get the rating the student has given to the course
+            ENROLLS_Service enrollmentService = new ENROLLS_Service();
+            ENROLLS enrollment = enrollmentService.getEnrollmentByUserIdAndCourseId(studentID, course.getID());
+            int rating = enrollment.getRating();
+            String feedback = enrollment.getFeedbackEnrollment();
+
             List<Map<String, Object>> filteredLessons = this.filteredLessonsByQuizzesAnswer(lessonList, studentID);
 
 
@@ -132,7 +140,9 @@ public class TEACHER_Service {
                     "course", course,
                     "status", "completed",
                     "studentID", filteredLessons.get(0).get("studentID"), // Assuming all lessons belong to the same student
-                    "score", score
+                    "score", score,
+                    "rating", rating,
+                    "feedback", feedback
                 );
                 filteredCourses.add(courseData);
             } else {
@@ -140,7 +150,9 @@ public class TEACHER_Service {
                     "course", course,
                     "status", "not completed",
                     "studentID", filteredLessons.get(0).get("studentID"), // Assuming all lessons belong to the same student
-                    "score", score
+                    "score", score,
+                    "rating", rating,
+                    "feedback", feedback
                 );
                 filteredCourses.add(courseData);
             }

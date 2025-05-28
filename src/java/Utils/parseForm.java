@@ -19,6 +19,7 @@ public class parseForm {
     public static Map<String, String> parseFormUrlEncoded(HttpServletRequest request) throws IOException {
         String line = request.getReader().readLine();
         Map<String, String> params = new HashMap<>();
+        System.out.println("line" + line);
         
         String [] parts = line.split("&");
         for(String part : parts) {

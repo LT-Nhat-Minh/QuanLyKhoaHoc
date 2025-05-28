@@ -25,6 +25,7 @@ public class ENROLLS_Service {
                 enrollment.setCreatedAt(result.getTimestamp("createdAt"));
                 enrollment.setUpdatedAt(result.getTimestamp("updatedAt"));
                 enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
+                enrollment.setRating(result.getInt("rating"));
                 enrollmentList.add(enrollment);
             }
 
@@ -54,6 +55,7 @@ public class ENROLLS_Service {
                 enrollment.setCreatedAt(result.getTimestamp("createdAt"));
                 enrollment.setUpdatedAt(result.getTimestamp("updatedAt"));
                 enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
+                enrollment.setRating(result.getInt("rating"));
                 enrollmentList.add(enrollment);
             }
 
@@ -82,6 +84,7 @@ public class ENROLLS_Service {
                 enrollment.setCreatedAt(result.getTimestamp("createdAt"));
                 enrollment.setUpdatedAt(result.getTimestamp("updatedAt"));
                 enrollment.setFeedbackEnrollment(result.getString("feedbackEnrollment"));
+                enrollment.setRating(result.getInt("rating"));
             }
 
             result.close();
@@ -124,7 +127,7 @@ public class ENROLLS_Service {
                 enrollment.setCreatedAt(rs.getTimestamp("createdAt"));
                 enrollment.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment") == null ? "" : rs.getString("feedbackEnrollment"));
-                enrollment.setRating(rs.getInt("rating"));
+                enrollment.setRating(rs.getInt("rating") == 0 ? 0 : rs.getInt("rating"));
             }
 
             rs.close();
@@ -139,12 +142,40 @@ public class ENROLLS_Service {
 
     public void updateEnrollment(ENROLLS enrollment) {
     try (Connection conn = DBConnection.getConnection()) {
-        String sql = "UPDATE ENROLLS SET feedbackEnrollment = ? WHERE userId = ? AND courseId = ?";
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        pstmt.setString(1, enrollment.getFeedbackEnrollment());
-        pstmt.setInt(2, enrollment.getUserId());
-        pstmt.setInt(3, enrollment.getCourseId());
+        //check if the enrollment exists
+        String checkSql = "SELECT 1 FROM ENROLLS WHERE userId = ? AND courseId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(checkSql);
+        pstmt.setInt(1, enrollment.getUserId());
+        pstmt.setInt(2, enrollment.getCourseId());
+        ResultSet rs = pstmt.executeQuery();
+        if (!rs.next()) {
+            throw new RuntimeException("Enrollment does not exist for userId: " + enrollment.getUserId() + " and courseId: " + enrollment.getCourseId());
+        }
+        rs.close();
+
+        //update the enrollment
+        String sql = "UPDATE ENROLLS SET feedbackEnrollment = ?, rating = ? WHERE userId = ? AND courseId = ?";
+        pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, enrollment.getFeedbackEnrollment() != null ? enrollment.getFeedbackEnrollment() : "");
+        pstmt.setInt(2, enrollment.getRating());
+        pstmt.setInt(3, enrollment.getUserId());
+        pstmt.setInt(4, enrollment.getCourseId());
         pstmt.executeUpdate();
+
+        String selectSql = "SELECT * FROM ENROLLS WHERE userId = ? AND courseId = ?";
+        pstmt = conn.prepareStatement(selectSql);
+        pstmt.setInt(1, enrollment.getUserId());
+        pstmt.setInt(2, enrollment.getCourseId());
+        rs = pstmt.executeQuery();
+        if (rs.next()) {
+            enrollment.setCreatedAt(rs.getTimestamp("createdAt"));
+            enrollment.setUpdatedAt(rs.getTimestamp("updatedAt"));
+            enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment") == null ? "" : rs.getString("feedbackEnrollment"));
+            enrollment.setRating(rs.getInt("rating"));
+        }
+        rs.close();
+        pstmt.close();
+        conn.close();
     } catch (Exception e) {
         throw new RuntimeException("Error: " + e.getMessage());
     }
@@ -183,7 +214,7 @@ public class ENROLLS_Service {
             enrollment.setCreatedAt(rs.getTimestamp("createdAt"));
             enrollment.setUpdatedAt(rs.getTimestamp("updatedAt"));
             enrollment.setFeedbackEnrollment(rs.getString("feedbackEnrollment"));
-            
+            enrollment.setRating(rs.getInt("rating"));
         }
 
     } catch (Exception e) {
