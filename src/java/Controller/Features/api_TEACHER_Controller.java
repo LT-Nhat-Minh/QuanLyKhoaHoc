@@ -465,7 +465,7 @@ public class api_TEACHER_Controller extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
     response.setContentType("application/json;charset=UTF-8");
-    if(jwt.validateToken(request)) {
+    if(jwt.validateToken(request, response)) {
         int teacherID = (int) request.getAttribute("id");
         int userRoleID = (int) request.getAttribute("roleID");
         if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin

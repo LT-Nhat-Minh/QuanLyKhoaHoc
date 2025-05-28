@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package Controller;
+package Controller.Features;
 import Model.ANSWERS;
 import Model.COURSES;
 import Model.ENROLLS;
@@ -37,7 +37,7 @@ import java.util.Map;
  * @author 22521
  */
 @WebServlet(name = "api_FEATURE_STUDENT_Controller", urlPatterns = {"/api/student/*"})
-public class api_FEATURE_STUDENT_Controller extends HttpServlet {
+public class api_STUDENT_Controller extends HttpServlet {
 
 
     private final Gson gson = new Gson();
