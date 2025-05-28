@@ -1,7 +1,7 @@
 package Model;
 
 import java.sql.Timestamp;
-
+//abs
 /**
  *
  * @author 22521
@@ -12,6 +12,7 @@ public class ENROLLS {
     private int courseId;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+
     private String feedbackEnrollment;
     private int rating; // Thêm thuộc tính rating
     
