@@ -5,17 +5,20 @@
 package Controller.Features;
 
 import Model.COURSES;
+import Model.COURSES_USERS_BANNED;
 import Model.ENROLLS;
 import Model.LESSONS;
 import Model.QUIZZES;
 import Model.USERS;
 import Service.COURSES_Service;
+import Service.COURSES_USERS_BANNED_Service;
 import Service.ENROLLS_Service;
 import Service.Features.TEACHER_Service;
 import Service.LESSONS_Service;
 import Service.QUIZZES_Service;
 import Service.USERS_Service;
 import Utils.jwt;
+import Utils.parseForm;
 import com.google.gson.Gson;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -24,6 +27,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +64,9 @@ public class api_TEACHER_Controller extends HttpServlet {
                         break;
                     case "/courses":
                         getTopCourseByAvgStudentScore(request, response, teacherID);
+                        break;
+                    case "/courses-ban":
+                        getBannedUsersFromCourse(request, response, teacherID);
                         break;
                     default:
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -179,7 +186,6 @@ public class api_TEACHER_Controller extends HttpServlet {
                             break;
                         }
                     default:
-                        System.out.println("path: " + path);
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                         response.getWriter().write("{\"error\":\"Invalid endpoint\"}");
                         break;
@@ -193,6 +199,74 @@ public class api_TEACHER_Controller extends HttpServlet {
             response.getWriter().write("{\"message\": \"Invalid token\"}");
         }
     }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        if (jwt.validateToken(request, response)) {
+            int teacherID = (int) request.getAttribute("id");
+            int userRoleID = (int) request.getAttribute("roleID");
+            if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin
+                String path = request.getPathInfo();
+                switch (path) {
+                    case "/courses": // Update course
+                        updateCourse(request, response, teacherID);
+                        break;
+                    case "/lessons": // Update lesson
+                        updateLesson(request, response, teacherID);
+                        break;
+                    case "/quizzies": // Update quiz
+                        updateQuiz(request, response, teacherID);
+                        break;
+                    case "/courses-ban":
+                        // Handle course ban logic here
+                        banUserFromCourse(request, response, teacherID);
+                        break;
+                    default:
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.getWriter().write("{\"error\":\"Invalid endpoint\"}");
+                        break;
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"message\": \"You do not have permission to access this resource\"}");
+            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"Invalid token\"}");
+        }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        if (jwt.validateToken(request, response)) {
+            int teacherID = (int) request.getAttribute("id");
+            int userRoleID = (int) request.getAttribute("roleID");
+            if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin
+                String path = request.getPathInfo();
+                switch (path) {
+                    case "/courses-ban":
+                        // Handle course ban logic here
+                        removeBannedUserFromCourse(request, response, teacherID);
+                        break;
+                    default:
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.getWriter().write("{\"error\":\"Invalid endpoint\"}");
+                        break;
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"message\": \"You do not have permission to access this resource\"}");
+            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"Invalid token\"}");
+        }
+    }
+
 
     private void getTopStudentByCourseScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
         int courseID = Integer.parseInt(request.getParameter("courseID"));
@@ -461,41 +535,7 @@ public class api_TEACHER_Controller extends HttpServlet {
         response.getWriter().write(new Gson().toJson(results));
     }
 
-      @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    response.setContentType("application/json;charset=UTF-8");
-    if(jwt.validateToken(request, response)) {
-        int teacherID = (int) request.getAttribute("id");
-        int userRoleID = (int) request.getAttribute("roleID");
-        if (userRoleID >= 2) { // 1 student, 2 teacher, 3 admin
-            String path = request.getPathInfo();
-            switch (path) {
-                case "/courses": // Cập nhật khóa học
-                    updateCourse(request, response, teacherID);
-                    break;
-                case "/lessons": // Cập nhật bài học
-                    updateLesson(request, response, teacherID);
-                    break;
-                case "/quizzies": // Cập nhật quiz
-                    updateQuiz(request, response, teacherID);
-                    break;
-                default:
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.getWriter().write("{\"error\":\"Invalid endpoint\"}");
-                    break;
-            }
-        } else {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("{\"message\": \"You do not have permission to access this resource\"}");
-        }
-    } else {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{\"message\": \"Invalid token\"}");
-    }
-}
-
-    private void updateCourse(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+    private void getBannedUsersFromCourse(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
         int courseID = Integer.parseInt(request.getParameter("courseID"));
         COURSES_Service courseService = new COURSES_Service();
         COURSES courseObj = courseService.getCourseById(courseID);
@@ -507,9 +547,45 @@ public class api_TEACHER_Controller extends HttpServlet {
             return;
         }
 
-        String title = request.getParameter("title");
-        String description = request.getParameter("description");
-        Double price = Double.parseDouble(request.getParameter("price"));
+        COURSES_USERS_BANNED_Service banService = new COURSES_USERS_BANNED_Service();
+        List<Integer> bannedUsers = banService.getAllBannedUsersFromCourse(courseID);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Integer bannedUserID : bannedUsers) {
+            USERS_Service userService = new USERS_Service();
+            USERS user = userService.getUserById(bannedUserID);
+            if (user != null) {
+                Map<String, Object> userInfo = new HashMap<>();
+                userInfo.put("id", user.getID());
+                userInfo.put("name", user.getUserName());
+                userInfo.put("email", user.getEmail());
+                result.add(userInfo);
+            }
+        }
+        if (result.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"message\": \"No banned users found for this course\"}");
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(new Gson().toJson(result));
+        }
+    }
+
+    private void updateCourse(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+        int courseID = Integer.parseInt(params.get("courseID"));
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(courseID);
+
+        // Check if the course exists and is created by the teacher
+        if (courseObj == null || courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        String title = params.get("title");
+        String description = params.get("description");
+        double price = Double.parseDouble(params.get("price"));
 
         // Validate input
         if (title == null || description == null || price <= 0) {
@@ -529,74 +605,169 @@ public class api_TEACHER_Controller extends HttpServlet {
     }
 
     private void updateLesson(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
-        int lessonID = Integer.parseInt(request.getParameter("lessonID"));
+        Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+        int lessonID = Integer.parseInt(params.get("lessonID"));
         LESSONS_Service lessonService = new LESSONS_Service();
         LESSONS lessonObj = lessonService.getLessonById(lessonID);
 
         // Check if the lesson exists and is created by the teacher
         COURSES_Service courseService = new COURSES_Service();
         COURSES courseObj = courseService.getCourseById(lessonObj.getCourseID());
-        
+
         if (lessonObj == null || courseObj.getCreatedByUserID() != teacherID) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("{\"message\": \"You are not the owner of this lesson\"}");
             return;
         }
 
-        String title = request.getParameter("title");
-        String content = request.getParameter("content");
-        String videoURL = request.getParameter("videoURL");
+        String title = params.get("title");
+        String content = params.get("content");
+        String videoURL = params.get("videoURL");
 
-       if (title == null || content == null || videoURL == null) {
-    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    response.getWriter().write("{\"error\":\"Missing required fields\"}");
-    return;
-}
+        if (title == null || content == null || videoURL == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Missing required fields\"}");
+            return;
+        }
 
-// Cập nhật thông tin bài học
-lessonObj.setTitle(title);
-lessonObj.setContent(content);
-lessonObj.setVideoURL(videoURL);
-lessonService.updateLesson(lessonObj);
+        // Update lesson information
+        lessonObj.setTitle(title);
+        lessonObj.setContent(content);
+        lessonObj.setVideoURL(videoURL);
+        lessonService.updateLesson(lessonObj);
 
-// Trả về lesson đã cập nhật
-response.setStatus(HttpServletResponse.SC_OK);
-response.getWriter().write(new Gson().toJson(lessonObj));
-        
-        
+        // Return the updated lesson
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(lessonObj));
+    }
 
-}
     // Cập nhật quiz
     private void updateQuiz(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
-    int quizID = Integer.parseInt(request.getParameter("quizID"));
-    String title = request.getParameter("title");
-    String question = request.getParameter("question");
-    int correctAnswer = Integer.parseInt(request.getParameter("correctAnswer"));
+        Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+        int quizID = Integer.parseInt(params.get("quizID"));
+        String title = params.get("title");
+        String question = params.get("question");
+        int correctAnswer = Integer.parseInt(params.get("correctAnswer"));
 
-    QUIZZES_Service quizService = new QUIZZES_Service();
-    QUIZZES quiz = quizService.getQuizById(quizID);
+        QUIZZES_Service quizService = new QUIZZES_Service();
+        QUIZZES quiz = quizService.getQuizById(quizID);
 
-    if (quiz == null) {
-        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        response.getWriter().write("{\"message\": \"Quiz not found\"}");
-        return;
+        if (quiz == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"message\": \"Quiz not found\"}");
+            return;
+        }
+
+        LESSONS_Service lessonService = new LESSONS_Service();
+        LESSONS lesson = lessonService.getLessonById(quiz.getLessonID());
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES course = courseService.getCourseById(lesson.getCourseID());
+
+        if (course == null || course.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        quiz.setTitle(title);
+        quiz.setQuestion(question);
+        quiz.setCorrectAnswer(correctAnswer);
+        quizService.updateQuiz(quiz);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(quiz));
     }
-    LESSONS_Service lessonService = new LESSONS_Service();
-    LESSONS lesson = lessonService.getLessonById(quiz.getLessonID());
-    COURSES_Service courseService = new COURSES_Service();
-    COURSES course = courseService.getCourseById(lesson.getCourseID());
-    if (course == null || course.getCreatedByUserID() != teacherID) {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
-        return;
+
+    private void banUserFromCourse(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        Map<String, String> params = parseForm.parseFormUrlEncoded(request);
+        List<Map<String, Object>> result = new ArrayList<>();
+        int courseID = Integer.parseInt(params.get("courseID"));
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(courseID);
+
+        // Check if the course exists and is created by the teacher
+        if (courseObj == null || courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        // Get the list of user IDs to ban
+        List<Integer> banListIDs = new ArrayList<>();
+        for (String key : params.keySet()) {
+            if (key.startsWith("banListID[")) {
+                banListIDs.add(Integer.parseInt(params.get(key)));
+            }
+        }
+
+        // Ban users from the course
+        COURSES_USERS_BANNED_Service banService = new COURSES_USERS_BANNED_Service();
+        for (int userId : banListIDs) {
+            // Check if the user exists
+            USERS_Service userService = new USERS_Service();
+            USERS user = userService.getUserById(userId);
+            if (user == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"message\": \"User with ID " + userId + " not found\"}");
+                return;
+            }
+        }
+        // Proceed to ban users
+        for (int userId : banListIDs) {
+            // Ban the user from the course
+            //check if the user is already banned
+            if(banService.getBannedUserFromCourse(courseID, userId) == null) {
+                banService.banUserFromCourse(courseID, userId);
+            }
+        }
+
+        // Get the updated list of banned users
+        List<Integer> banList = banService.getAllBannedUsersFromCourse(courseID);
+
+        result.add(Map.of(
+            "courseID", courseID,
+            "bannedUserIDs", banList
+        ));
+
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(result)); 
     }
-    quiz.setTitle(title);
-    quiz.setQuestion(question);
-    quiz.setCorrectAnswer(correctAnswer);
-    quizService.updateQuiz(quiz);
 
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().write(new Gson().toJson(quiz));
-}
+    private void removeBannedUserFromCourse(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        int courseID = Integer.parseInt(request.getParameter("courseID"));
+        int userID = Integer.parseInt(request.getParameter("userID"));
+        COURSES_USERS_BANNED_Service banService = new COURSES_USERS_BANNED_Service();
 
+        //check if the course exists and is created by the teacher
+        COURSES_Service courseService = new COURSES_Service();
+        COURSES courseObj = courseService.getCourseById(courseID);
+        if (courseObj == null || courseObj.getCreatedByUserID() != teacherID) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("{\"message\": \"You are not the owner of this course\"}");
+            return;
+        }
+
+        // Check if the user is banned from the course
+        COURSES_USERS_BANNED bannedUser = banService.getBannedUserFromCourse(courseID, userID);
+        if (bannedUser == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"message\": \"User with ID " + userID + " is not banned from course with ID " + courseID + "\"}");
+            return;
+        }
+
+        // Remove the user from the banned list
+        banService.removeBannedUserFromCourse(courseID, userID);
+
+        // Get the updated list of banned users
+        List<Integer> banList = banService.getAllBannedUsersFromCourse(courseID);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        result.add(Map.of(
+            "courseID", courseID,
+            "bannedUserIDs", banList
+        ));
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(new Gson().toJson(result));
+    }
 }

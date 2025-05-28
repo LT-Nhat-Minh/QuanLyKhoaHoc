@@ -11,6 +11,7 @@ import Model.QUIZZES;
 import Model.STUDIES;
 import Service.ANSWERS_Service;
 import Service.COURSES_Service;
+import Service.COURSES_USERS_BANNED_Service;
 import Service.ENROLLS_Service;
 import Service.Features.STUDENT_Service;
 import Service.LESSONS_Service;
@@ -266,7 +267,6 @@ public class api_STUDENT_Controller extends HttpServlet {
                     int quizID = Integer.parseInt(request.getParameter("quizID"));
                     int answerValue = Integer.parseInt(request.getParameter("answer"));
 
-                    
                     // Validate input
                     if (userID <= 0 || quizID <= 0 || answerValue >= 5 || answerValue <= 0) {
                         throw new Exception("Missing or invalid userId, quizID or answer");
@@ -286,6 +286,16 @@ public class api_STUDENT_Controller extends HttpServlet {
                     LESSONS lesson = lessonService.getLessonById(quiz.getLessonID());
                     COURSES_Service courseService = new COURSES_Service();
                     COURSES course = courseService.getCourseById(lesson.getCourseID());
+
+                    //check if the user is banned from the course of the quiz
+                    COURSES_USERS_BANNED_Service bannedService = new COURSES_USERS_BANNED_Service();
+                    List<Integer> bannedUserIDs = bannedService.getAllBannedUsersFromCourse(course.getID());
+                    if (bannedUserIDs.contains(userID)) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.getWriter().write("{\"error\":\"User is banned from the course of this quiz\"}");
+                        return;
+                    }
+
                     ENROLLS_Service ENROLLService = new ENROLLS_Service();
                     ENROLLS enrollment = ENROLLService.getEnrollmentByUserIdAndCourseId(userID, course.getID());
                     if (enrollment == null) {

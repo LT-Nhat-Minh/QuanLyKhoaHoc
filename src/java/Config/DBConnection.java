@@ -14,7 +14,7 @@ import java.sql.DriverManager;
 public class DBConnection {
     public static Connection getConnection() throws Exception {
         String url = "jdbc:sqlserver://DESKTOP-Minh118:1433;;"
-                + "databaseName=qlkh_beta12;"
+                + "databaseName=qlkh_beta16;"
                 + "encrypt=true;"
                 + "trustServerCertificate=true";
         String user = "sa";
