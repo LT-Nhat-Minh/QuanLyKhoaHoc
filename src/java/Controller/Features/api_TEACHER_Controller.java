@@ -55,6 +55,7 @@ public class api_TEACHER_Controller extends HttpServlet {
                             getTopStudentByLessonScore(request, response, teacherID);
 
                         } else if (request.getParameter("courseID") != null) {
+                            
                             getTopStudentByCourseScore(request, response, teacherID);
                             
                         } else {
@@ -269,6 +270,7 @@ public class api_TEACHER_Controller extends HttpServlet {
 
 
     private void getTopStudentByCourseScore(HttpServletRequest request, HttpServletResponse response, int teacherID) throws IOException {
+        
         int courseID = Integer.parseInt(request.getParameter("courseID"));
         // Get all students who have enrolled in the course
         // COURSES_ID -> ENROLLS -> STUDENTS -> COURSES
@@ -298,6 +300,8 @@ public class api_TEACHER_Controller extends HttpServlet {
             studentList.add(student);
         }
 
+       
+
         List<Map<String, Object>> filteredCoursesAllStudent = new ArrayList<>();
         for (USERS student : studentList) {
             TEACHER_Service teacherService = new TEACHER_Service();
@@ -306,6 +310,8 @@ public class api_TEACHER_Controller extends HttpServlet {
                 filteredCoursesAllStudent.add(i);
             }
         }
+
+        
 
         if (request.getParameter("sort") != null) {
             String sort = request.getParameter("sort");

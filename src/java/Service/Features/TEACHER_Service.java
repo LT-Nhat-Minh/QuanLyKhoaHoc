@@ -134,22 +134,24 @@ public class TEACHER_Service {
             }
 
             double score = lessonList.isEmpty() ? 0.0 : (totalLessonScore / lessonList.size());
-            score = Math.round(score * 100.0) / 100.0; // làm tròn 2 chữ số
-            if (hasCompletedLesson) {
+            score = Math.round(score * 100.0) / 100.0; // round to 2 decimal places
+            if (!filteredLessons.isEmpty()) {
+                // Ensure all values used in Map.of are not null
+                if (filteredLessons.get(0).get("studentID") == null) {
+                    throw new RuntimeException("Student ID is null");
+                }
+                if (rating == 0) {
+                    rating = -1; // Default value for rating if not provided
+                }
+                if (feedback == null) {
+                    feedback = "No feedback provided"; // Default feedback
+                }
+
+                // Proceed with creating the map
                 Map<String, Object> courseData = Map.of(
                     "course", course,
-                    "status", "completed",
-                    "studentID", filteredLessons.get(0).get("studentID"), // Assuming all lessons belong to the same student
-                    "score", score,
-                    "rating", rating,
-                    "feedback", feedback
-                );
-                filteredCourses.add(courseData);
-            } else {
-                Map<String, Object> courseData = Map.of(
-                    "course", course,
-                    "status", "not completed",
-                    "studentID", filteredLessons.get(0).get("studentID"), // Assuming all lessons belong to the same student
+                    "status", hasCompletedLesson ? "completed" : "not completed",
+                    "studentID", filteredLessons.get(0).get("studentID"),
                     "score", score,
                     "rating", rating,
                     "feedback", feedback
@@ -157,6 +159,7 @@ public class TEACHER_Service {
                 filteredCourses.add(courseData);
             }
         }
+        
         return filteredCourses;
     }
 }
